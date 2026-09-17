@@ -1,56 +1,45 @@
 <script>
+  import { get } from 'svelte/store'
   import { user, authReady } from '../stores/auth.js'
-  import { hasProfile, currentStudent } from '../stores/student.js'
+  import { hasProfile } from '../stores/student.js'
   import { push } from 'svelte-spa-router'
   import { onMount } from 'svelte'
 
-  export let requireAuth = false
-  export let requireProfile = false
-  export let requireNoProfile = false   // for /create-profile: redirect away if profile exists
+  export let requireAuth      = false
+  export let requireProfile   = false
+  export let requireNoProfile = false
 
   let checked = false
 
-  onMount(async () => {
-    // Wait for auth to settle
-    await waitForAuthReady()
-    doCheck()
+  onMount(() => {
+    // Wait for auth to settle, then check
+    if (get(authReady)) {
+      doCheck()
+    } else {
+      const unsub = authReady.subscribe(ready => {
+        if (ready) { unsub(); doCheck() }
+      })
+    }
   })
 
-  function waitForAuthReady() {
-    return new Promise(resolve => {
-      const unsub = authReady.subscribe(ready => {
-        if (ready) { unsub(); resolve() }
-      })
-    })
-  }
-
   function doCheck() {
-    const $user = $user_val
-    const $hp   = $hasProfile_val
+    const $u  = get(user)
+    const $hp = get(hasProfile)
 
-    if (requireAuth && !$user) {
+    if (requireAuth && !$u) {
       push('/login')
       return
     }
-    if (requireProfile && $user && !$hp) {
+    if (requireProfile && $u && !$hp) {
       push('/create-profile')
       return
     }
-    if (requireNoProfile && $user && $hp) {
+    if (requireNoProfile && $u && $hp) {
       push('/directory')
       return
     }
     checked = true
   }
-
-  let $user_val
-  let $hasProfile_val
-
-  user.subscribe(v => { $user_val = v })
-  hasProfile.subscribe(v => { $hasProfile_val = v })
-
-  // Re-check if store values change
-  $: if ($authReady) doCheck()
 </script>
 
 {#if checked}

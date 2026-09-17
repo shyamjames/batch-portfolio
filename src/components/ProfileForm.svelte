@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { get } from 'svelte/store'
   import SkillChip from './SkillChip.svelte'
   import { allSkills, ensureSkillsLoaded } from '../stores/skills.js'
   import { addSkillToStudent, createAndAddSkill, removeSkillFromStudent } from '../lib/firestore.js'
@@ -42,9 +43,8 @@
   onMount(async () => {
     await ensureSkillsLoaded()
     // Build skillMap from store
-    allSkills.subscribe(skills => {
-      skillMap = Object.fromEntries(skills.map(s => [s.id, s.name]))
-    })()
+    const skills = get(allSkills)
+    skillMap = Object.fromEntries(skills.map(s => [s.id, s.name]))
   })
 
   function emptyProject() {
@@ -57,8 +57,7 @@
   // Skill autocomplete
   function handleSkillInput() {
     if (!skillQuery.trim()) { suggestions = []; showSuggestions = false; return }
-    let all = []
-    allSkills.subscribe(s => { all = s })()
+    const all = get(allSkills)
     const q = skillQuery.toLowerCase()
     suggestions = all.filter(s =>
       !skillIds.includes(s.id) &&
