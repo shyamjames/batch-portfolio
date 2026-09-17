@@ -11,66 +11,36 @@
 
   let checked = false
 
-  onMount(() => {
-    // Wait for auth to settle
-    const unsubAuth = authReady.subscribe(ready => {
-      if (ready) {
-        // If logged in, wait for student doc check too
-        if (get(user)) {
-          let unsubStudent
-          unsubStudent = studentLoaded.subscribe(sLoaded => {
-            if (sLoaded) {
-              if (unsubStudent) unsubStudent()
-              else setTimeout(() => unsubStudent && unsubStudent(), 0)
-              doCheck()
-            }
-          })
-        } else {
-          doCheck()
-        }
+  $: if ($authReady) {
+    if (!$user) {
+      if (requireAuth) {
+        push('/login')
+      } else {
+        checked = true
       }
-    })
-    return unsubAuth
-  })
-
-  function doCheck() {
-    const $u  = get(user)
-    const $ur = get(userRole)
-    const $hp = get(hasProfile)
-    const currentLoc = get(location)
-
-    if (requireAuth && !$u) {
-      push('/login')
-      return
-    }
-
-    if ($u) {
-      // Role selection
-      if (!$ur) {
-        if (currentLoc !== '/onboarding') push('/onboarding')
-        return
-      }
-
-      // Role-specific routing
-      if ($ur === 'student') {
-        if (requireProfile && !$hp) {
+    } else if ($studentLoaded) {
+      const loc = $location
+      let redirect = false
+      
+      if (!$userRole) {
+        if (loc !== '/onboarding') { push('/onboarding'); redirect = true }
+      } else if ($userRole === 'student') {
+        if (requireProfile && !$hasProfile) {
           push('/create-profile')
-          return
-        }
-        if (requireNoProfile && $hp) {
+          redirect = true
+        } else if (requireNoProfile && $hasProfile) {
           push('/directory')
-          return
+          redirect = true
         }
-      } else if ($ur === 'viewer') {
-        // Viewers don't have profiles. Block them from profile creation/editing.
-        if (currentLoc === '/create-profile' || currentLoc === '/edit') {
+      } else if ($userRole === 'viewer') {
+        if (loc === '/create-profile' || loc === '/edit') {
           push('/directory')
-          return
+          redirect = true
         }
       }
+      
+      if (!redirect) checked = true
     }
-
-    checked = true
   }
 </script>
 

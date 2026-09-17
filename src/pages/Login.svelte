@@ -8,30 +8,11 @@
   let loading = false
   let error = ''
 
-  onMount(() => {
-    let unsubAuth
-    unsubAuth = authReady.subscribe(ready => {
-      if (ready && $user) {
-        let unsubStudent
-        unsubStudent = studentLoaded.subscribe(sLoaded => {
-          if (sLoaded) {
-            if (unsubStudent) unsubStudent()
-            else setTimeout(() => unsubStudent && unsubStudent(), 0)
-            
-            if (unsubAuth) unsubAuth()
-            else setTimeout(() => unsubAuth && unsubAuth(), 0)
-
-            if (!$userRole) push('/onboarding')
-            else if ($userRole === 'student' && !$hasProfile) push('/create-profile')
-            else push('/directory')
-          }
-        })
-      }
-    })
-    return () => {
-      if (unsubAuth) unsubAuth()
-    }
-  })
+  $: if ($authReady && $user && $studentLoaded && $userRole !== undefined) {
+    if (!$userRole) push('/onboarding')
+    else if ($userRole === 'student' && !$hasProfile) push('/create-profile')
+    else push('/directory')
+  }
   
   async function handleSignIn() {
     loading = true
