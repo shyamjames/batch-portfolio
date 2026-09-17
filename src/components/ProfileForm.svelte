@@ -173,7 +173,8 @@
         finalResumeURL = await uploadResume($user.uid, resumeFile)
       }
 
-      await onSave?.({
+      // Add a safety timeout so it doesn't hang forever
+      const savePromise = onSave?.({
         name: name.trim(),
         bio: bio.trim(),
         batch,
@@ -188,9 +189,18 @@
         projects,
         certs,
       })
+
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Save operation timed out after 10 seconds")), 10000))
+      
+      await Promise.race([savePromise, timeoutPromise])
+
     } catch (e) {
       console.error('Failed to save profile:', e)
-      window.__showToast?.(e.message || 'Failed to save profile', 'error')
+      if (window.__showToast) {
+        window.__showToast(e.message || 'Failed to save profile', 'error')
+      } else {
+        alert("Error saving profile: " + e.message)
+      }
     } finally {
       saving = false
     }
