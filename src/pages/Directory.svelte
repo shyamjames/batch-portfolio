@@ -64,7 +64,7 @@
   <meta name="description" content="Browse all student profiles from the 2025–27 batch." />
 </svelte:head>
 
-<RouteGuard requireAuth requireProfile>
+<RouteGuard requireAuth>
   <div class="page-wrapper directory-page">
 
     <header class="dir-header">

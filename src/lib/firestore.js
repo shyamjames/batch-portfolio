@@ -6,6 +6,17 @@ import {
   increment,
 } from 'firebase/firestore'
 
+/* ─────────────── ROLES ─────────────── */
+
+export async function getUserRole(uid) {
+  const snap = await getDoc(doc(db, 'users', uid))
+  return snap.exists() ? snap.data().role : null // 'student' | 'viewer'
+}
+
+export async function setUserRole(uid, role) {
+  await setDoc(doc(db, 'users', uid), { role, updatedAt: serverTimestamp() }, { merge: true })
+}
+
 /* ─────────────── STUDENTS ─────────────── */
 
 export async function getStudent(uid) {

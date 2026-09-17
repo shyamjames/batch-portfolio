@@ -1,25 +1,30 @@
 <script>
   import { onMount } from 'svelte'
   import { signInWithGoogle } from '../lib/auth.js'
-  import { user, authReady } from '../stores/auth.js'
-  import { hasProfile } from '../stores/student.js'
+  import { user, authReady, userRole } from '../stores/auth.js'
+  import { hasProfile, studentLoaded } from '../stores/student.js'
   import { push } from 'svelte-spa-router'
 
   let loading = false
   let error = ''
 
   onMount(() => {
-    // If already authed, redirect appropriately
-    const unsub = authReady.subscribe(ready => {
+    const unsubAuth = authReady.subscribe(ready => {
       if (ready && $user) {
-        unsub()
-        if ($hasProfile) push('/directory')
-        else push('/create-profile')
+        const unsubStudent = studentLoaded.subscribe(sLoaded => {
+          if (sLoaded) {
+            unsubStudent()
+            unsubAuth()
+            if (!$userRole) push('/onboarding')
+            else if ($userRole === 'student' && !$hasProfile) push('/create-profile')
+            else push('/directory')
+          }
+        })
       }
     })
-    return unsub
+    return unsubAuth
   })
-
+  
   async function handleSignIn() {
     loading = true
     error = ''

@@ -188,6 +188,9 @@
         projects,
         certs,
       })
+    } catch (e) {
+      console.error('Failed to save profile:', e)
+      window.__showToast?.(e.message || 'Failed to save profile', 'error')
     } finally {
       saving = false
     }

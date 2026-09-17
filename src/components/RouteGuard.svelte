@@ -1,8 +1,8 @@
 <script>
   import { get } from 'svelte/store'
-  import { user, authReady } from '../stores/auth.js'
-  import { hasProfile } from '../stores/student.js'
-  import { push } from 'svelte-spa-router'
+  import { user, authReady, userRole } from '../stores/auth.js'
+  import { hasProfile, studentLoaded } from '../stores/student.js'
+  import { push, location } from 'svelte-spa-router'
   import { onMount } from 'svelte'
 
   export let requireAuth      = false
@@ -12,32 +12,62 @@
   let checked = false
 
   onMount(() => {
-    // Wait for auth to settle, then check
-    if (get(authReady)) {
-      doCheck()
-    } else {
-      const unsub = authReady.subscribe(ready => {
-        if (ready) { unsub(); doCheck() }
-      })
-    }
+    // Wait for auth to settle
+    const unsubAuth = authReady.subscribe(ready => {
+      if (ready) {
+        // If logged in, wait for student doc check too
+        if (get(user)) {
+          const unsubStudent = studentLoaded.subscribe(sLoaded => {
+            if (sLoaded) {
+              unsubStudent()
+              doCheck()
+            }
+          })
+        } else {
+          doCheck()
+        }
+      }
+    })
+    return unsubAuth
   })
 
   function doCheck() {
     const $u  = get(user)
+    const $ur = get(userRole)
     const $hp = get(hasProfile)
+    const currentLoc = get(location)
 
     if (requireAuth && !$u) {
       push('/login')
       return
     }
-    if (requireProfile && $u && !$hp) {
-      push('/create-profile')
-      return
+
+    if ($u) {
+      // Role selection
+      if (!$ur) {
+        if (currentLoc !== '/onboarding') push('/onboarding')
+        return
+      }
+
+      // Role-specific routing
+      if ($ur === 'student') {
+        if (requireProfile && !$hp) {
+          push('/create-profile')
+          return
+        }
+        if (requireNoProfile && $hp) {
+          push('/directory')
+          return
+        }
+      } else if ($ur === 'viewer') {
+        // Viewers don't have profiles. Block them from profile creation/editing.
+        if (currentLoc === '/create-profile' || currentLoc === '/edit') {
+          push('/directory')
+          return
+        }
+      }
     }
-    if (requireNoProfile && $u && $hp) {
-      push('/directory')
-      return
-    }
+
     checked = true
   }
 </script>
