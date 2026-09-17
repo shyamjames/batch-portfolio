@@ -4,7 +4,7 @@
   import SkillChip from './SkillChip.svelte'
   import { allSkills, ensureSkillsLoaded } from '../stores/skills.js'
   import { addSkillToStudent, createAndAddSkill, removeSkillFromStudent } from '../lib/firestore.js'
-  import { uploadPhoto } from '../lib/storage.js'
+  import { uploadPhoto, uploadResume, validateResume } from '../lib/storage.js'
   import { user } from '../stores/auth.js'
 
   export let mode = 'create'    // 'create' | 'edit'
@@ -19,8 +19,14 @@
   let github     = initial.links?.github     || ''
   let linkedin   = initial.links?.linkedin   || ''
   let portfolio  = initial.links?.portfolio  || ''
-  let photoFile  = null
+  let photoFile    = null
   let photoPreview = initial.photoURL || null
+
+  // Resume
+  let resumeFile   = null
+  let resumeURL    = initial.resumeURL || null
+  let resumeError  = ''
+  let resumeDragging = false
 
   // Skills
   let skillIds   = [...(initial.skillIds || [])]
@@ -102,6 +108,34 @@
     }
   }
 
+  // Resume — drag-drop + click-to-browse
+  function handleResumeFile(file) {
+    resumeError = validateResume(file) || ''
+    if (!resumeError) {
+      resumeFile = file
+      resumeURL  = null // will be set after upload
+    } else {
+      resumeFile = null
+    }
+  }
+
+  function handleResumeInput(e) {
+    handleResumeFile(e.target.files[0])
+  }
+
+  function handleResumeDrop(e) {
+    e.preventDefault()
+    resumeDragging = false
+    const file = e.dataTransfer?.files?.[0]
+    if (file) handleResumeFile(file)
+  }
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB'
+    return (bytes / 1024 / 1024).toFixed(1) + ' MB'
+  }
+
   // Project list
   function addProject() {
     if (!newProject.title.trim()) return
@@ -129,15 +163,22 @@
     if (!validate() || saving) return
     saving = true
     try {
-      let photoURL = initial.photoURL || null
+      let photoURL  = initial.photoURL  || null
+      let finalResumeURL = resumeURL || initial.resumeURL || null
+
       if (photoFile && $user) {
         photoURL = await uploadPhoto($user.uid, photoFile)
       }
+      if (resumeFile && $user) {
+        finalResumeURL = await uploadResume($user.uid, resumeFile)
+      }
+
       await onSave?.({
         name: name.trim(),
         bio: bio.trim(),
         batch,
         photoURL,
+        resumeURL: finalResumeURL,
         skillIds,
         links: {
           github:    github.trim()    || null,
@@ -181,21 +222,99 @@
     </div>
   </section>
 
-  <!-- ── Photo ── -->
+  <!-- ── Photo & Resume ── -->
   <section class="form-section">
-    <h3 class="text-card section-title">Profile Photo</h3>
-    <div class="photo-row">
-      {#if photoPreview}
-        <img src={photoPreview} alt="Preview" class="avatar" width="72" height="72" />
-      {:else}
-        <div class="avatar avatar-placeholder" style="width:72px;height:72px;font-size:1.4rem">
-          {name ? name[0].toUpperCase() : '?'}
+    <h3 class="text-card section-title">Profile Photo &amp; Resume</h3>
+
+    <div class="uploads-row">
+      <!-- Photo -->
+      <div class="upload-block">
+        <p class="upload-label">Photo</p>
+        <div class="photo-row">
+          {#if photoPreview}
+            <img src={photoPreview} alt="Preview" class="avatar" width="72" height="72" />
+          {:else}
+            <div class="avatar avatar-placeholder" style="width:72px;height:72px;font-size:1.4rem">
+              {name ? name[0].toUpperCase() : '?'}
+            </div>
+          {/if}
+          <label class="btn btn-ghost btn-sm photo-upload-btn" for="pf-photo">
+            {photoPreview ? 'Change photo' : 'Upload photo'}
+          </label>
+          <input id="pf-photo" type="file" accept="image/*" on:change={handlePhoto} class="visually-hidden" />
         </div>
-      {/if}
-      <label class="btn btn-ghost btn-sm photo-upload-btn" for="pf-photo">
-        {photoPreview ? 'Change photo' : 'Upload photo'}
-      </label>
-      <input id="pf-photo" type="file" accept="image/*" on:change={handlePhoto} class="visually-hidden" />
+      </div>
+
+      <!-- Resume -->
+      <div class="upload-block">
+        <p class="upload-label">Resume <span class="upload-hint">(PDF · max 1 MB)</span></p>
+
+        <!-- Drop zone -->
+        <div
+          id="resume-dropzone"
+          class="resume-dropzone {resumeDragging ? 'dragging' : ''} {resumeFile ? 'has-file' : ''} {resumeError ? 'has-error' : ''}"
+          role="button"
+          tabindex="0"
+          aria-label="Resume upload area"
+          on:dragover|preventDefault={() => resumeDragging = true}
+          on:dragleave={() => resumeDragging = false}
+          on:drop={handleResumeDrop}
+          on:click={() => document.getElementById('pf-resume').click()}
+          on:keydown={e => e.key === 'Enter' && document.getElementById('pf-resume').click()}
+        >
+          {#if resumeFile}
+            <!-- Selected file preview -->
+            <div class="resume-file-info">
+              <svg class="resume-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+              <div>
+                <p class="resume-filename">{resumeFile.name}</p>
+                <p class="text-caption">{formatBytes(resumeFile.size)}</p>
+              </div>
+              <button
+                type="button"
+                class="resume-clear"
+                aria-label="Remove resume"
+                on:click|stopPropagation={() => { resumeFile = null; resumeError = '' }}
+              >×</button>
+            </div>
+          {:else if resumeURL}
+            <!-- Existing resume (edit mode) -->
+            <div class="resume-file-info">
+              <svg class="resume-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <div>
+                <p class="resume-filename">Resume uploaded</p>
+                <p class="text-caption">Drop or click to replace</p>
+              </div>
+            </div>
+          {:else}
+            <!-- Empty state -->
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-secondary);margin-bottom:0.5rem">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p class="text-body" style="color:var(--text-secondary)">Drop PDF here or <span class="dropzone-browse">browse</span></p>
+            <p class="text-caption">PDF only · max 1 MB</p>
+          {/if}
+        </div>
+
+        <input id="pf-resume" type="file" accept="application/pdf" on:change={handleResumeInput} class="visually-hidden" />
+
+        {#if resumeError}
+          <p class="field-error" role="alert">{resumeError}</p>
+        {/if}
+      </div>
     </div>
   </section>
 
@@ -357,9 +476,54 @@
   }
   .suggestions li button:hover { background: var(--accent-soft); color: var(--accent); }
   .create-skill button { color: var(--accent); font-weight: 600; }
+  /* Photo + resume upload row */
+  .uploads-row { display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: start; }
+  @media (max-width: 600px) { .uploads-row { grid-template-columns: 1fr; } }
+  .upload-block { display: flex; flex-direction: column; gap: 0.625rem; }
+  .upload-label { font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .upload-hint { font-weight: 400; text-transform: none; letter-spacing: 0; }
   .photo-row { display: flex; align-items: center; gap: 1rem; }
   .photo-upload-btn { cursor: pointer; }
   .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+  /* Resume drop zone */
+  .resume-dropzone {
+    border: 2px dashed var(--surface-border);
+    border-radius: 0.75rem;
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    min-height: 110px;
+    transition: border-color 0.15s, background 0.15s;
+    gap: 0.25rem;
+    outline: none;
+  }
+  .resume-dropzone:hover,
+  .resume-dropzone:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+  .resume-dropzone.dragging { border-color: var(--accent); background: var(--accent-soft); }
+  .resume-dropzone.has-file  { border-style: solid; border-color: var(--success); background: color-mix(in srgb, var(--success) 8%, transparent); }
+  .resume-dropzone.has-error { border-color: var(--danger, #dc2626); }
+  .dropzone-browse { color: var(--accent); font-weight: 600; }
+  .resume-file-info { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; }
+  .resume-icon { flex-shrink: 0; color: var(--success); }
+  .resume-filename { font-weight: 600; font-size: 0.875rem; word-break: break-all; }
+  .resume-clear {
+    margin-left: auto;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0 0.25rem;
+    transition: color 0.15s;
+  }
+  .resume-clear:hover { color: var(--danger, #dc2626); }
   .item-card { background: var(--bg); border: 1px solid var(--surface-border); border-radius: 0.5rem; padding: 0.875rem; display: flex; flex-direction: column; gap: 0.25rem; }
   .item-header { display: flex; align-items: center; justify-content: space-between; }
   .add-item-form { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; border-radius: 0.75rem; border: 1px dashed var(--surface-border); }

@@ -106,8 +106,26 @@
             </div>
           {/if}
 
+          <!-- Download Resume -->
+          {#if student.resumeURL}
+            <a
+              href={student.resumeURL}
+              target="_blank"
+              rel="noopener"
+              class="btn btn-primary btn-sm resume-btn"
+              id="download-resume-btn"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Download Resume
+            </a>
+          {/if}
+
           {#if isOwnProfile}
-            <a href="/#/edit" class="btn btn-ghost btn-sm" style="margin-top:1.25rem;width:100%;justify-content:center">✏️ Edit profile</a>
+            <a href="/#/edit" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center">✏️ Edit profile</a>
           {/if}
         </div>
       </aside>
@@ -234,6 +252,15 @@
     justify-content: center;
   }
   .link-btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+  .resume-btn {
+    width: 100%;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    margin-top: 0.25rem;
+  }
+  .resume-btn:hover { text-decoration: none; }
 
   .profile-main { display: flex; flex-direction: column; gap: 1.25rem; }
   .profile-section { padding: 1.5rem; }
