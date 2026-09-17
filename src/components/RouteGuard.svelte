@@ -17,9 +17,11 @@
       if (ready) {
         // If logged in, wait for student doc check too
         if (get(user)) {
-          const unsubStudent = studentLoaded.subscribe(sLoaded => {
+          let unsubStudent
+          unsubStudent = studentLoaded.subscribe(sLoaded => {
             if (sLoaded) {
-              unsubStudent()
+              if (unsubStudent) unsubStudent()
+              else setTimeout(() => unsubStudent && unsubStudent(), 0)
               doCheck()
             }
           })

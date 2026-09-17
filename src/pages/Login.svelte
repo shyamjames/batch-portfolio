@@ -9,12 +9,18 @@
   let error = ''
 
   onMount(() => {
-    const unsubAuth = authReady.subscribe(ready => {
+    let unsubAuth
+    unsubAuth = authReady.subscribe(ready => {
       if (ready && $user) {
-        const unsubStudent = studentLoaded.subscribe(sLoaded => {
+        let unsubStudent
+        unsubStudent = studentLoaded.subscribe(sLoaded => {
           if (sLoaded) {
-            unsubStudent()
-            unsubAuth()
+            if (unsubStudent) unsubStudent()
+            else setTimeout(() => unsubStudent && unsubStudent(), 0)
+            
+            if (unsubAuth) unsubAuth()
+            else setTimeout(() => unsubAuth && unsubAuth(), 0)
+
             if (!$userRole) push('/onboarding')
             else if ($userRole === 'student' && !$hasProfile) push('/create-profile')
             else push('/directory')
@@ -22,7 +28,9 @@
         })
       }
     })
-    return unsubAuth
+    return () => {
+      if (unsubAuth) unsubAuth()
+    }
   })
   
   async function handleSignIn() {
