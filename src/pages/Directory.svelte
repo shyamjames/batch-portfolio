@@ -86,7 +86,7 @@
       />
 
       <div class="filter-group">
-        <label class="filter-label">Batch</label>
+        <span class="filter-label">Batch</span>
         <div class="filter-pills">
           {#each ['all', 'MCA', 'MSc CS'] as b}
             <button
@@ -98,7 +98,7 @@
       </div>
 
       <div class="filter-group" style="position:relative">
-        <label class="filter-label">Skills</label>
+        <span class="filter-label">Skills</span>
         <button
           class="btn btn-ghost btn-sm"
           on:click={() => skillDropdownOpen = !skillDropdownOpen}

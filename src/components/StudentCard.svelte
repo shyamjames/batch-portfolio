@@ -13,7 +13,14 @@
   }
 </script>
 
-<article class="student-card card" on:click={handleClick} on:keydown={e => e.key==='Enter'&&handleClick()} tabindex="0" role="button" aria-label="View {student.name}'s profile">
+<div
+  class="student-card card"
+  on:click={handleClick}
+  on:keydown={e => e.key==='Enter'&&handleClick()}
+  tabindex="0"
+  role="button"
+  aria-label="View {student.name}'s profile"
+>
   <div class="card-top">
     {#if student.photoURL}
       <img class="avatar" src={student.photoURL} alt="{student.name} photo" width="56" height="56" />
@@ -38,7 +45,7 @@
       <span class="chip chip-more">+{student.skillNames.length - 3}</span>
     {/if}
   </div>
-</article>
+</div>
 
 <style>
   .student-card {
