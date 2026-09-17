@@ -1,0 +1,12 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": [
+    {
+      "bucket": "batch-portfolio-2527.firebasestorage.app",
+      "rules": "storage.rules"
+    }
+  ]
+}
