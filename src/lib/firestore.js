@@ -17,6 +17,46 @@ export async function setUserRole(uid, role) {
   await setDoc(doc(db, 'users', uid), { role, updatedAt: serverTimestamp() }, { merge: true })
 }
 
+/** Completely delete a user's data from Firestore (students, projects, certs, users, aggregates) */
+export async function deleteAccountData(uid) {
+  const batchTx = writeBatch(db)
+  
+  // 1. Fetch student doc to get batch and skillIds
+  const studentSnap = await getDoc(doc(db, 'students', uid))
+  if (studentSnap.exists()) {
+    const data = studentSnap.data()
+    
+    // Decrement aggregate
+    if (data.batch) {
+      const aggField = data.batch === 'MCA' ? 'mcaCount' : 'mscCount'
+      batchTx.update(doc(db, 'meta', 'aggregates'), { [aggField]: increment(-1) })
+    }
+
+    // Decrement skill usage counts
+    const skillIds = data.skillIds || []
+    for (const skillId of skillIds) {
+      batchTx.update(doc(db, 'skills', skillId), { usageCount: increment(-1) })
+    }
+  }
+
+  // 2. Fetch and delete all projects
+  const projSnap = await getDocs(collection(db, 'students', uid, 'projects'))
+  projSnap.forEach(d => batchTx.delete(d.ref))
+
+  // 3. Fetch and delete all certs
+  const certSnap = await getDocs(collection(db, 'students', uid, 'certs'))
+  certSnap.forEach(d => batchTx.delete(d.ref))
+
+  // 4. Delete the student doc itself
+  batchTx.delete(doc(db, 'students', uid))
+
+  // 5. Delete the user role doc
+  batchTx.delete(doc(db, 'users', uid))
+
+  // Commit everything atomically
+  await batchTx.commit()
+}
+
 /* ─────────────── STUDENTS ─────────────── */
 
 export async function getStudent(uid) {

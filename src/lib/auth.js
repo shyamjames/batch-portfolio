@@ -4,6 +4,7 @@ import {
   signInWithPopup,
   signOut as fbSignOut,
   onAuthStateChanged,
+  deleteUser,
 } from 'firebase/auth'
 
 const provider = new GoogleAuthProvider()
@@ -16,6 +17,13 @@ export async function signInWithGoogle() {
 /** Sign out the current user */
 export async function signOut() {
   return fbSignOut(auth)
+}
+
+/** Delete the current authenticated user from Firebase Auth */
+export async function deleteUserAccount() {
+  if (auth.currentUser) {
+    return deleteUser(auth.currentUser)
+  }
 }
 
 /** Subscribe to auth state changes. Returns unsubscribe fn. */

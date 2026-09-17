@@ -1,11 +1,43 @@
 <script>
   import { user, authReady, userRole } from '../stores/auth.js'
-  import { hasProfile } from '../stores/student.js'
-  import { signOut } from '../lib/auth.js'
+  import { hasProfile, currentStudent } from '../stores/student.js'
+  import { signOut, deleteUserAccount } from '../lib/auth.js'
+  import { deleteAccountData } from '../lib/firestore.js'
   import { toggleTheme, isDark } from '../lib/theme.js'
   import { push } from 'svelte-spa-router'
 
   let dark = isDark()
+  let dropdownOpen = false
+  let deleting = false
+
+  function toggleDropdown() {
+    dropdownOpen = !dropdownOpen
+  }
+
+  // Close dropdown if clicked outside
+  function handleBodyClick(e) {
+    if (!e.target.closest('.user-menu-container')) {
+      dropdownOpen = false
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (!confirm('Are you sure you want to completely delete your account? This action cannot be undone.')) return
+    
+    deleting = true
+    try {
+      await deleteAccountData($user.uid)
+      await deleteUserAccount()
+      window.__showToast?.('Account deleted successfully', 'success')
+      push('/')
+    } catch (e) {
+      console.error('Delete account error:', e)
+      window.__showToast?.(e.message || 'Failed to delete account. You may need to sign out and sign in again first.', 'error')
+    } finally {
+      deleting = false
+      dropdownOpen = false
+    }
+  }
 
   function handleToggle() {
     toggleTheme()
@@ -17,6 +49,8 @@
     push('/')
   }
 </script>
+
+<svelte:window on:click={handleBodyClick} />
 
 <header class="navbar">
   <div class="page-wrapper navbar-inner">
@@ -39,7 +73,33 @@
             <a href="/#/create-profile" class="nav-link">Create Profile</a>
           {/if}
         {/if}
-        <button class="btn btn-ghost btn-sm" on:click={handleSignOut}>Sign out</button>
+        
+        <div class="user-menu-container" style="position:relative;margin-left:0.5rem">
+          <button class="avatar-btn" on:click={toggleDropdown} aria-label="User menu">
+            {#if $currentStudent?.photoURL}
+              <img src={$currentStudent.photoURL} alt="Avatar" class="avatar-img" />
+            {:else if $user.photoURL}
+              <img src={$user.photoURL} alt="Avatar" class="avatar-img" />
+            {:else}
+              <div class="avatar-initial">{$user.displayName ? $user.displayName[0].toUpperCase() : 'U'}</div>
+            {/if}
+          </button>
+          
+          {#if dropdownOpen}
+            <div class="dropdown-menu">
+              <div class="dropdown-header">
+                <span style="font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{$user.displayName || 'User'}</span>
+                <span class="text-caption" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{$user.email}</span>
+              </div>
+              <button class="dropdown-item" on:click={handleSignOut}>Sign out</button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" disabled={deleting} on:click={handleDeleteAccount}>
+                {deleting ? 'Deleting...' : 'Delete Account'}
+              </button>
+            </div>
+          {/if}
+        </div>
+        
       {:else if $authReady}
         <a href="/#/login" class="btn btn-primary btn-sm">Sign in</a>
       {/if}
@@ -121,6 +181,60 @@
     flex-shrink: 0;
   }
   .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* User Menu */
+  .avatar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--surface-border);
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+  }
+  .avatar-btn:hover { border-color: var(--accent); }
+  .avatar-img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar-initial { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
+  
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 220px;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-ambient);
+    padding: 0.5rem 0;
+    z-index: 200;
+  }
+  .dropdown-header {
+    padding: 0.5rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--surface-border);
+    margin-bottom: 0.5rem;
+  }
+  .dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .dropdown-item:hover { background: var(--surface-border); }
+  .dropdown-item.danger { color: var(--danger, #dc2626); }
+  .dropdown-item.danger:hover { background: rgba(220, 38, 38, 0.1); }
+  .dropdown-item:disabled { opacity: 0.5; cursor: not-allowed; }
+  .dropdown-divider { height: 1px; background: var(--surface-border); margin: 0.25rem 0; }
 
   @media (max-width: 640px) {
     .nav-link { display: none; }
