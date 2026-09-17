@@ -27,6 +27,7 @@
       await signInWithGoogle()
       // Auth store will react; redirect handled in onMount subscriber
     } catch (e) {
+      console.error('Sign in error:', e)
       error = e.code === 'auth/popup-closed-by-user'
         ? 'Sign-in cancelled. Try again.'
         : 'Sign-in failed. Please try again.'
