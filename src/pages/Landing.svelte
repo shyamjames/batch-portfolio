@@ -121,6 +121,30 @@
     </div>
   </section>
 
+  <!-- ═══ GATED SEARCH (Moved to top) ═══ -->
+  <section class="search-section page-wrapper" style="padding-top: 1.5rem;">
+    <div class="bento-grid">
+      <div class="span-12 search-card card">
+        <p class="text-section" style="margin-bottom:0.5rem">Find a student</p>
+        <p class="text-caption" style="margin-bottom:1.25rem">Search by name, skill, or batch — sign in to unlock.</p>
+        <form class="search-row" on:submit|preventDefault={handleSearchSubmit}>
+          <input
+            class="search-input"
+            id="landing-search"
+            type="search"
+            placeholder="e.g. &quot;React&quot; or &quot;Ananya&quot;"
+            bind:value={searchQuery}
+            on:focus={handleSearchFocus}
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-primary">
+            {$user ? 'Search' : '🔒 Sign in to search'}
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <!-- ═══ STATS DASHBOARD ═══ -->
   <section class="stats-section page-wrapper">
     <h2 class="text-section stats-heading">Batch at a glance</h2>
@@ -187,31 +211,6 @@
 
     </div>
   </section>
-
-  <!-- ═══ GATED SEARCH ═══ -->
-  <section class="search-section page-wrapper">
-    <div class="bento-grid">
-      <div class="span-12 search-card card">
-        <p class="text-section" style="margin-bottom:0.5rem">Find a student</p>
-        <p class="text-caption" style="margin-bottom:1.25rem">Search by name, skill, or batch — sign in to unlock.</p>
-        <form class="search-row" on:submit|preventDefault={handleSearchSubmit}>
-          <input
-            class="search-input"
-            id="landing-search"
-            type="search"
-            placeholder="e.g. &quot;React&quot; or &quot;Ananya&quot;"
-            bind:value={searchQuery}
-            on:focus={handleSearchFocus}
-            autocomplete="off"
-          />
-          <button type="submit" class="btn btn-primary">
-            {$user ? 'Search' : '🔒 Sign in to search'}
-          </button>
-        </form>
-      </div>
-    </div>
-  </section>
-
 </div>
 
 <style>

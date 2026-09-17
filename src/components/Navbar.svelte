@@ -1,5 +1,5 @@
 <script>
-  import { user, authReady } from '../stores/auth.js'
+  import { user, authReady, userRole } from '../stores/auth.js'
   import { hasProfile } from '../stores/student.js'
   import { signOut } from '../lib/auth.js'
   import { toggleTheme, isDark } from '../lib/theme.js'
@@ -30,10 +30,14 @@
 
     <nav class="nav-links">
       {#if $authReady && $user}
-        {#if $hasProfile}
-          <a href="/#/directory" class="nav-link">Directory</a>
-          <a href="/#/profile/{$user.uid}" class="nav-link">My Profile</a>
-          <a href="/#/edit" class="nav-link">Edit</a>
+        <a href="/#/directory" class="nav-link">Directory</a>
+        {#if $userRole === 'student'}
+          {#if $hasProfile}
+            <a href="/#/profile/{$user.uid}" class="nav-link">My Profile</a>
+            <a href="/#/edit" class="nav-link">Edit Profile</a>
+          {:else}
+            <a href="/#/create-profile" class="nav-link">Create Profile</a>
+          {/if}
         {/if}
         <button class="btn btn-ghost btn-sm" on:click={handleSignOut}>Sign out</button>
       {:else if $authReady}
