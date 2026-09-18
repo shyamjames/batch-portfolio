@@ -4,7 +4,7 @@
   import { signOut, deleteUserAccount } from "../lib/auth.js";
   import { deleteAccountData } from "../lib/firestore.js";
   import { toggleTheme, isDark } from "../lib/theme.js";
-  import { push } from "svelte-spa-router";
+  import { push, location } from "svelte-spa-router";
 
   let dark = isDark();
   let dropdownOpen = false;
@@ -79,7 +79,14 @@
       <span class="brand-text">.batchrc</span>
     </a>
 
-    <a href="/#/directory" class="directory-btn">Student Directory</a>
+    <a href="/#/directory" class="nav-btn" class:active={$location === '/directory'}>Student Directory</a>
+    {#if $authReady && $user && $userRole === 'student'}
+      {#if $hasProfile}
+        <a href="/#/profile/{$user.uid}" class="nav-btn" class:active={$location === `/profile/${$user.uid}`}>My Profile</a>
+      {:else}
+        <a href="/#/create-profile" class="nav-btn" class:active={$location === '/create-profile'}>Create Profile</a>
+      {/if}
+    {/if}
 
     <nav class="nav-links">
       {#if $authReady && $user}
@@ -289,7 +296,7 @@
     color: var(--text-primary);
     text-decoration: none;
   }
-  .directory-btn {
+  .nav-btn {
     background: var(--surface);
     border: none;
     border-radius: 0.5rem;
@@ -306,7 +313,8 @@
     margin-left: 0.75rem;
     text-decoration: none;
   }
-  .directory-btn:hover {
+  .nav-btn:hover,
+  .nav-btn.active {
     box-shadow: var(--shadow-neu-inset-sm);
     color: var(--primary);
     text-decoration: none;
