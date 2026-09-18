@@ -207,7 +207,7 @@
             class="search-input"
             id="landing-search"
             type="search"
-            placeholder="e.g. &quot;React&quot; or &quot;Ananya&quot;"
+            placeholder="e.g. &quot;React&quot; or &quot;Gloria&quot;"
             bind:value={searchQuery}
             autocomplete="off"
           />
@@ -462,7 +462,8 @@
   }
   .search-input {
     background: var(--bg);
-    border: 1px solid var(--surface-border);
+    border: none;
+    box-shadow: var(--shadow-neu-inset-sm);
     border-radius: 0.5rem;
     padding: 0.625rem 1rem;
     color: var(--text-primary);
@@ -470,9 +471,11 @@
     width: 320px;
     max-width: 100%;
     outline: none;
-    transition: border-color 0.15s;
+    transition: box-shadow 0.15s;
   }
   .search-input:focus {
-    border-color: var(--accent);
+    box-shadow:
+      var(--shadow-neu-inset-sm),
+      0 0 0 2px var(--accent);
   }
 </style>
