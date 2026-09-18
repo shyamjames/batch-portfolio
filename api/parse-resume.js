@@ -1,23 +1,35 @@
-import admin from 'firebase-admin';
+import { getApps, initializeApp, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { GoogleGenAI } from '@google/genai';
 
+let initError = null;
+
 // Initialize Firebase Admin (only once)
-if (!admin.apps.length) {
+if (!getApps().length) {
   try {
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+      // Strip potential wrapping single quotes from dotenv
+      let saStr = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
+      if (saStr.startsWith("'") && saStr.endsWith("'")) {
+        saStr = saStr.slice(1, -1);
+      }
+      const serviceAccount = JSON.parse(saStr);
+      initializeApp({
+        credential: cert(serviceAccount)
       });
     } else {
-      console.warn('FIREBASE_SERVICE_ACCOUNT environment variable is not set. Auth verification will fail.');
+      initError = 'FIREBASE_SERVICE_ACCOUNT environment variable is missing.';
     }
   } catch (error) {
-    console.error('Firebase Admin initialization error', error);
+    initError = error.message;
   }
 }
 
 export default async function handler(req, res) {
+  if (initError) {
+    return res.status(500).json({ error: `Firebase Init Error: ${initError}` });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -30,13 +42,13 @@ export default async function handler(req, res) {
 
   const token = authHeader.split('Bearer ')[1];
   try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    const decodedToken = await getAuth().verifyIdToken(token);
     if (!decodedToken.uid) {
       return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
   } catch (error) {
     console.error('Token verification failed:', error);
-    return res.status(401).json({ error: 'Unauthorized: Token verification failed' });
+    return res.status(401).json({ error: `Unauthorized: Token verification failed (${error.message})` });
   }
 
   // 2. Extract inputs
@@ -68,21 +80,40 @@ Extract the following from this resume as strict JSON, no markdown fences, no co
 Only include items explicitly present in the resume. Do not invent or infer anything not stated.
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: [
-        {
-          inlineData: {
-            data: pdfBase64,
-            mimeType: 'application/pdf'
+    let response;
+    let retries = 3;
+    let delay = 2000; // 2 seconds
+
+    while (retries > 0) {
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-3.6-flash',
+          contents: [
+            {
+              inlineData: {
+                data: pdfBase64,
+                mimeType: 'application/pdf'
+              }
+            },
+            prompt
+          ],
+          config: {
+            responseMimeType: 'application/json',
           }
-        },
-        prompt
-      ],
-      config: {
-        responseMimeType: 'application/json',
+        });
+        break; // Success! Exit the retry loop.
+      } catch (err) {
+        if (err.status === 503 || (err.message && err.message.includes('503'))) {
+          retries--;
+          if (retries === 0) throw err;
+          console.log(`503 High Demand hit. Retrying in ${delay/1000}s...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2; // Exponential backoff
+        } else {
+          throw err; // Throw non-503 errors immediately
+        }
       }
-    });
+    }
 
     const text = response.text;
     
@@ -93,6 +124,6 @@ Only include items explicitly present in the resume. Do not invent or infer anyt
     return res.status(200).json(parsedData);
   } catch (error) {
     console.error('Parsing Error:', error);
-    return res.status(500).json({ error: 'Failed to parse resume automatically' });
+    return res.status(500).json({ error: `Failed to parse resume automatically: ${error.message}` });
   }
 }

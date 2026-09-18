@@ -214,12 +214,15 @@
         },
         body: JSON.stringify({ resumeUrl: finalResumeURL })
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(errorData.error || 'Unknown server error');
+      }
       extractionData = await res.json()
       showReviewModal = true
     } catch (e) {
       console.error(e)
-      parseError = 'Couldn\'t parse this resume automatically — please fill in manually.'
+      parseError = e.message || 'Couldn\'t parse this resume automatically — please fill in manually.'
     } finally {
       parsingResume = false
     }
