@@ -329,6 +329,17 @@
     newProject = emptyProject()
   }
   function removeProject(i) { projects = projects.filter((_, idx) => idx !== i) }
+  function editProject(i) {
+    const p = projects[i]
+    newProject = {
+      title: p.title,
+      description: p.description,
+      techUsed: Array.isArray(p.techUsed) ? p.techUsed.join(', ') : p.techUsed,
+      link: p.link
+    }
+    removeProject(i)
+    setTimeout(() => document.getElementById('proj-title')?.focus(), 50)
+  }
 
   // Cert list
   function addCert() {
@@ -346,6 +357,12 @@
     newCert = emptyCert()
   }
   function removeCert(i) { certs = certs.filter((_, idx) => idx !== i) }
+  function editCert(i) {
+    const c = certs[i]
+    newCert = { ...c }
+    removeCert(i)
+    setTimeout(() => document.getElementById('cert-title')?.focus(), 50)
+  }
 
   function validate() {
     errors = {}
@@ -671,7 +688,10 @@
                   <a href={formatExternalUrl(p.link)} target="_blank" rel="noopener noreferrer" class="text-caption link-external">↗ Link</a>
                 {/if}
               </div>
-              <button type="button" class="btn btn-danger btn-sm" on:click={() => removeProject(i)}>Remove</button>
+              <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn btn-secondary btn-sm" on:click={() => editProject(i)}>Edit</button>
+                <button type="button" class="btn btn-danger btn-sm" on:click={() => removeProject(i)}>Remove</button>
+              </div>
             </div>
             {#if p.description}<p class="text-caption" style="margin:0.25rem 0">{p.description}</p>{/if}
             {#if p.techUsed?.length}
@@ -728,7 +748,10 @@
                   <a href={formatExternalUrl(c.link)} target="_blank" rel="noopener noreferrer" class="text-caption link-external">↗ Link</a>
                 {/if}
               </div>
-              <button type="button" class="btn btn-danger btn-sm" on:click={() => removeCert(i)}>Remove</button>
+              <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn btn-secondary btn-sm" on:click={() => editCert(i)}>Edit</button>
+                <button type="button" class="btn btn-danger btn-sm" on:click={() => removeCert(i)}>Remove</button>
+              </div>
             </div>
             <p class="text-caption">{c.issuer}{c.date ? ' · ' + c.date : ''}</p>
           </div>
