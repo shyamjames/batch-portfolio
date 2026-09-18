@@ -1,44 +1,34 @@
-import { storage } from './firebase.js'
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from 'firebase/storage'
-
 /**
- * Upload a profile photo for the given uid.
- * Stored at photos/{uid}.jpg (matches storage rules).
+ * Upload a profile photo for the given uid using Cloudinary unsigned uploads.
  * Returns the public download URL.
  */
 export async function uploadPhoto(uid, file) {
-  const photoRef = ref(storage, `photos/${uid}.jpg`)
-  const snapshot = await uploadBytes(photoRef, file, { contentType: 'image/jpeg' })
-  return getDownloadURL(snapshot.ref)
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  
+  if (!cloudName || !preset) {
+    throw new Error("Cloudinary environment variables are missing.");
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', preset);
+  
+  // We use the image/upload endpoint for photos
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: formData
+  });
+  
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Failed to upload photo to Cloudinary");
+  }
+  
+  const data = await res.json();
+  return data.secure_url;
 }
 
-/**
- * Get the download URL for a student's photo.
- * Returns null if no photo exists yet.
- */
-export async function getPhotoURL(uid) {
-  try {
-    return await getDownloadURL(ref(storage, `photos/${uid}.jpg`))
-  } catch {
-    return null
-  }
-}
-
-/**
- * Delete a student's profile photo.
- */
-export async function deletePhoto(uid) {
-  try {
-    await deleteObject(ref(storage, `photos/${uid}.jpg`))
-  } catch {
-    // ignore if doesn't exist
-  }
-}
 
 // ─── Resume helpers ───────────────────────────────────────────────────────────
 
@@ -56,35 +46,32 @@ export function validateResume(file) {
 }
 
 /**
- * Upload a resume PDF for the given uid.
- * Stored at resumes/{uid} — overwrites any previous version.
- * Returns the authenticated download URL.
+ * Upload a resume PDF for the given uid using Cloudinary unsigned uploads.
+ * Returns the public download URL.
  */
 export async function uploadResume(uid, file) {
-  const resumeRef = ref(storage, `resumes/${uid}`)
-  const snapshot = await uploadBytes(resumeRef, file, { contentType: 'application/pdf' })
-  return getDownloadURL(snapshot.ref)
-}
-
-/**
- * Get the authenticated download URL for a student's resume.
- * Returns null if none exists.
- */
-export async function getResumeURL(uid) {
-  try {
-    return await getDownloadURL(ref(storage, `resumes/${uid}`))
-  } catch {
-    return null
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  
+  if (!cloudName || !preset) {
+    throw new Error("Cloudinary environment variables are missing.");
   }
-}
 
-/**
- * Delete a student's resume.
- */
-export async function deleteResume(uid) {
-  try {
-    await deleteObject(ref(storage, `resumes/${uid}`))
-  } catch {
-    // ignore if doesn't exist
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', preset);
+
+  // We use the raw/upload endpoint for PDFs (or auto/upload)
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+    method: 'POST',
+    body: formData
+  });
+  
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Failed to upload resume to Cloudinary");
   }
+  
+  const data = await res.json();
+  return data.secure_url;
 }
