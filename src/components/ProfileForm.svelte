@@ -347,6 +347,15 @@
           bind:value={skillQuery}
           on:input={handleSkillInput}
           on:blur={() => setTimeout(() => showSuggestions = false, 200)}
+          on:keydown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (!skillQuery.trim()) return;
+              const exact = suggestions.find(s => s.name.toLowerCase() === skillQuery.trim().toLowerCase());
+              if (exact) selectSkill(exact);
+              else createSkill();
+            }
+          }}
           placeholder="Type a skill name…"
           autocomplete="off"
         />
@@ -403,7 +412,7 @@
     <div class="add-item-form card" style="box-shadow:none;background:var(--accent-soft)">
       <div class="field">
         <label for="proj-title">Project title</label>
-        <input id="proj-title" bind:value={newProject.title} placeholder="Project name" />
+        <input id="proj-title" bind:value={newProject.title} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addProject(); } }} placeholder="Project name" />
       </div>
       <div class="field">
         <label for="proj-desc">Description</label>
@@ -411,11 +420,11 @@
       </div>
       <div class="field">
         <label for="proj-tech">Tech used (comma-separated)</label>
-        <input id="proj-tech" bind:value={newProject.techUsed} placeholder="React, Firebase, …" />
+        <input id="proj-tech" bind:value={newProject.techUsed} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addProject(); } }} placeholder="React, Firebase, …" />
       </div>
       <div class="field">
         <label for="proj-link">Link (optional)</label>
-        <input id="proj-link" bind:value={newProject.link} type="url" placeholder="https://…" />
+        <input id="proj-link" bind:value={newProject.link} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addProject(); } }} type="url" placeholder="https://…" />
       </div>
       <button type="button" class="btn btn-ghost btn-sm" on:click={addProject}>+ Add project</button>
     </div>
@@ -438,19 +447,19 @@
     <div class="add-item-form card" style="box-shadow:none;background:var(--accent-soft)">
       <div class="field">
         <label for="cert-title">Certificate title</label>
-        <input id="cert-title" bind:value={newCert.title} placeholder="e.g. AWS Certified Developer" />
+        <input id="cert-title" bind:value={newCert.title} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCert(); } }} placeholder="e.g. AWS Certified Developer" />
       </div>
       <div class="field">
         <label for="cert-issuer">Issuer</label>
-        <input id="cert-issuer" bind:value={newCert.issuer} placeholder="e.g. Amazon Web Services" />
+        <input id="cert-issuer" bind:value={newCert.issuer} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCert(); } }} placeholder="e.g. Amazon Web Services" />
       </div>
       <div class="field">
         <label for="cert-date">Date</label>
-        <input id="cert-date" bind:value={newCert.date} type="month" />
+        <input id="cert-date" bind:value={newCert.date} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCert(); } }} type="month" />
       </div>
       <div class="field">
         <label for="cert-link">Credential URL (optional)</label>
-        <input id="cert-link" bind:value={newCert.link} type="url" placeholder="https://…" />
+        <input id="cert-link" bind:value={newCert.link} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCert(); } }} type="url" placeholder="https://…" />
       </div>
       <button type="button" class="btn btn-ghost btn-sm" on:click={addCert}>+ Add certificate</button>
     </div>
