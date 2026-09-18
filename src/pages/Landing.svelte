@@ -166,7 +166,7 @@
           </div>
           {#if $authReady && !$user}
             <p class="text-caption" style="margin-top: 1.5rem;">
-              Are you a student? <a href="javascript:void(0)" on:click|preventDefault={handleSignIn} style="color: var(--primary); font-weight: 600;">Sign up / Login</a>
+              Are you a student? <a href="/#/login" style="color: var(--primary); font-weight: 600;">Sign up / Login</a>
             </p>
           {/if}
         </div>
