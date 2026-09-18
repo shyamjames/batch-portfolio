@@ -13,6 +13,7 @@
   let parsedCerts = []
 
   let loading = true
+  let isConfirming = false
 
   $: if (show && rawData) {
     loading = true
@@ -53,11 +54,16 @@
   }
 
   function handleConfirm() {
+    if (isConfirming) return
+    isConfirming = true
     dispatch('confirm', {
       skills: parsedSkills.filter(s => s.selected),
       projects: parsedProjects.filter(p => p.selected).map(p => ({ title: p.title, description: p.description, link: '', techUsed: '' })),
       certs: parsedCerts.filter(c => c.selected).map(c => ({ title: c.title, issuer: c.issuer, link: '', date: '' }))
     })
+    
+    // Reset state after a short delay so the modal can close smoothly
+    setTimeout(() => { isConfirming = false }, 500)
   }
 
   function handleCancel() {
@@ -141,8 +147,10 @@
       {/if}
 
       <div class="modal-footer">
-        <button class="btn btn-secondary" on:click={handleCancel}>Cancel</button>
-        <button class="btn btn-primary" on:click={handleConfirm}>Confirm & Apply</button>
+        <button class="btn btn-secondary" on:click={handleCancel} disabled={isConfirming}>Cancel</button>
+        <button class="btn btn-primary" on:click={handleConfirm} disabled={isConfirming}>
+          {isConfirming ? 'Adding...' : 'Confirm & Apply'}
+        </button>
       </div>
     </div>
   </div>
@@ -159,7 +167,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 9999;
     padding: 1rem;
     backdrop-filter: blur(4px);
   }
@@ -247,6 +255,7 @@
     background: transparent;
     border-radius: 0.25rem;
     transition: all 0.2s;
+    color: var(--text); /* Fix for dark mode input text */
   }
   
   .inline-edit:hover, .inline-edit:focus {

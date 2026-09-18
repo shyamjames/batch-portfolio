@@ -178,6 +178,7 @@
     
     parsingResume = true
     parseError = ''
+    parseLogs = ['Authenticating...']
     
     let finalResumeURL = resumeURL || initial.resumeURL
 
@@ -214,12 +215,49 @@
         },
         body: JSON.stringify({ resumeUrl: finalResumeURL })
       })
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: res.statusText }));
         throw new Error(errorData.error || 'Unknown server error');
       }
-      extractionData = await res.json()
-      showReviewModal = true
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split('\n\n');
+        buffer = events.pop(); // Keep incomplete part
+        
+        for (const eventStr of events) {
+          if (!eventStr.trim()) continue;
+          
+          let eventType = 'message';
+          let eventData = '';
+          const lines = eventStr.split('\n');
+          
+          for (const line of lines) {
+            if (line.startsWith('event: ')) eventType = line.substring(7).trim();
+            if (line.startsWith('data: ')) eventData = line.substring(6).trim();
+          }
+          
+          if (eventData) {
+            const data = JSON.parse(eventData);
+            if (eventType === 'log') {
+              parseLogs = [...parseLogs, data.message];
+            } else if (eventType === 'error') {
+              throw new Error(data.message);
+            } else if (eventType === 'result') {
+              extractionData = data;
+              showReviewModal = true;
+            }
+          }
+        }
+      }
     } catch (e) {
       console.error(e)
       parseError = e.message || 'Couldn\'t parse this resume automatically — please fill in manually.'
@@ -498,18 +536,28 @@
 
         {#if resumeURL || initial.resumeURL || resumeFile}
           <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
-            <button type="button" class="btn btn-secondary" on:click={handleParseResume} disabled={parsingResume}>
-              {#if parsingResume}
-                Parsing...
-              {:else}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
-                Parse resume with AI
-              {/if}
+            <button type="button" class="btn btn-secondary" style="display: flex; gap: 0.5rem; align-items: center;" on:click={handleParseResume} disabled={parsingResume}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class={parsingResume ? 'spin' : ''}>
+                <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path d="M21 12a9 9 0 00-9-9" />
+              </svg>
+              {parsingResume ? 'Parsing...' : 'Parse resume with AI'}
             </button>
+            
+            {#if parseLogs.length > 0 && parsingResume}
+              <div class="terminal-logs">
+                {#each parseLogs as log}
+                  <div class="log-line">
+                    <span class="log-prefix">&gt;</span> {log}
+                  </div>
+                {/each}
+              </div>
+            {/if}
+
             {#if parseError}
               <p class="error-msg">{parseError}</p>
             {:else}
-              <p class="text-caption" style="color: var(--text-secondary); max-width: 400px; font-size: 0.8rem;">
+              <p class="text-caption" style="color:var(--text-secondary); max-width: 400px; line-height: 1.4;">
                 Auto-fill your skills, projects & certifications. This does not overwrite your existing data, it only adds to it.
               </p>
             {/if}
@@ -856,5 +904,37 @@
     color: var(--text-secondary);
     padding-left: 0.25rem;
     margin-top: -0.25rem;
+  }
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .terminal-logs {
+    background: #111;
+    color: #0f0;
+    font-family: monospace;
+    font-size: 0.8rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    max-width: 400px;
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    border: 1px solid #333;
+    overflow-x: hidden;
+  }
+  
+  .log-line {
+    word-break: break-all;
+  }
+  
+  .log-prefix {
+    color: #666;
+    margin-right: 0.5rem;
   }
 </style>

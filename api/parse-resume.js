@@ -1,9 +1,7 @@
 import { getApps, initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { GoogleGenAI } from '@google/genai';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const pdfParse = require('pdf-parse');
+import { PDFParse } from 'pdf-parse';
 
 let initError = null;
 
@@ -60,17 +58,40 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Bad Request: resumeUrl is required' });
   }
 
+  // Initialize SSE
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+  });
+
+  const sendLog = (msg) => {
+    res.write(`event: log\ndata: ${JSON.stringify({ message: msg })}\n\n`);
+  };
+
+  const sendError = (msg) => {
+    res.write(`event: error\ndata: ${JSON.stringify({ message: msg })}\n\n`);
+    res.end();
+  };
+
   try {
+    sendLog('Authenticating user securely...');
     // 3. Fetch PDF bytes
+    sendLog('Fetching PDF from secure storage...');
     const pdfResponse = await fetch(resumeUrl);
     if (!pdfResponse.ok) {
       throw new Error(`Failed to fetch PDF from Cloudinary: ${pdfResponse.statusText}`);
     }
     const arrayBuffer = await pdfResponse.arrayBuffer();
     
+    sendLog('Extracting raw text from PDF...');
     // Extract text from the PDF buffer
-    const pdfData = await pdfParse(Buffer.from(arrayBuffer));
+    const parser = new PDFParse({ data: Buffer.from(arrayBuffer) });
+    const pdfData = await parser.getText();
     const resumeText = pdfData.text;
+    await parser.destroy();
+    
+    sendLog(`Extracted ${resumeText.split(/\\s+/).length} words. Preparing AI analysis...`);
 
     // 4. Initialize Gemini
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -92,6 +113,7 @@ Only include items explicitly present in the resume. Do not invent or infer anyt
 
     while (retries > 0) {
       try {
+        sendLog(retries === 3 ? 'Sending data to Gemini AI...' : `Retrying AI analysis (Attempt ${4 - retries}/3)...`);
         response = await ai.models.generateContent({
           model: 'gemini-3.6-flash',
           contents: [
@@ -102,13 +124,14 @@ Only include items explicitly present in the resume. Do not invent or infer anyt
             responseMimeType: 'application/json',
           }
         });
+        sendLog('AI analysis complete! Parsing results...');
         break; // Success! Exit the retry loop.
       } catch (err) {
         const errorString = (err.message || '').toUpperCase();
         if (err.status === 503 || errorString.includes('503') || errorString.includes('UNAVAILABLE') || errorString.includes('HIGH DEMAND')) {
           retries--;
           if (retries === 0) throw err;
-          console.log(`High Demand hit. Retrying in ${delay/1000}s...`);
+          sendLog(`High Demand hit. Retrying in ${delay/1000}s...`);
           await new Promise(resolve => setTimeout(resolve, delay));
           delay *= 2; // Exponential backoff
         } else {
@@ -123,9 +146,10 @@ Only include items explicitly present in the resume. Do not invent or infer anyt
     const parsedData = JSON.parse(text);
     
     // 6. Return Data
-    return res.status(200).json(parsedData);
+    res.write(`event: result\ndata: ${JSON.stringify(parsedData)}\n\n`);
+    res.end();
   } catch (error) {
     console.error('Parsing Error:', error);
-    return res.status(500).json({ error: `Failed to parse resume automatically: ${error.message}` });
+    sendError(`Failed to parse resume automatically: ${error.message}`);
   }
 }
