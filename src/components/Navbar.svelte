@@ -57,7 +57,7 @@
     <a href="/#/" class="brand">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
         <rect width="28" height="28" rx="7" fill="var(--accent)"/>
-        <text x="14" y="19" text-anchor="middle" font-size="12" font-weight="700" fill="white" font-family="'JetBrains Mono', monospace">.rc</text>
+        <text x="14" y="19" text-anchor="middle" font-size="12" font-weight="700" fill="white" font-family="'Geist Mono', monospace">.rc</text>
       </svg>
       <span class="brand-text">.batchrc</span>
     </a>
@@ -155,7 +155,7 @@
     flex-shrink: 0;
   }
   .brand-text {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', monospace;
     font-weight: 700;
     letter-spacing: -0.03em;
   }

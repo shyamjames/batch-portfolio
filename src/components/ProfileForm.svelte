@@ -705,7 +705,7 @@
   }
   .url-prefix {
     padding: 0.75rem 0.25rem 0.75rem 1rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', monospace;
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-secondary);
@@ -719,7 +719,7 @@
     box-shadow: none !important;
     padding: 0.75rem 1rem 0.75rem 0.25rem;
     color: var(--text-primary);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', monospace;
     font-size: 0.9rem;
     width: 100%;
     outline: none;

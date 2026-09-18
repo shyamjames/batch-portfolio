@@ -333,7 +333,7 @@
     margin-bottom: 0.75rem;
   }
   .hero-heading {
-    font-family: var(--font-mono, "JetBrains Mono", monospace);
+    font-family: var(--font-mono, "Geist Mono", monospace);
     font-weight: 700;
     line-height: 1.18;
     letter-spacing: -0.025em;
