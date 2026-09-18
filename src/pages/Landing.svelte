@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import BentoCard from '../components/BentoCard.svelte'
   import StatsChart from '../components/StatsChart.svelte'
   import { getAllSkills, getAggregates } from '../lib/firestore.js'
@@ -20,7 +20,64 @@
   let displayMca   = 0
   let displayMsc   = 0
 
+  // rotating typewriter headline state
+  const headlines = [
+    "git clone talent",
+    "404: Boring Portfolios Not Found",
+    "O(1) lookup for great hires",
+    "Compiled from two batches, zero bugs.",
+    "import talent from RCSS",
+    "Ctrl+F for your next hire"
+  ]
+
+  let displayedHeadline = ""
+  let activeTimer = null
+
+  function runTypewriter() {
+    let phraseIndex = 0
+    let charIndex = 0
+    let isDeleting = false
+
+    function tick() {
+      const currentPhrase = headlines[phraseIndex]
+
+      if (!isDeleting) {
+        // Typing forward
+        charIndex++
+        displayedHeadline = currentPhrase.slice(0, charIndex)
+
+        if (charIndex === currentPhrase.length) {
+          // Pause when complete so user can read it
+          isDeleting = true
+          activeTimer = setTimeout(tick, 2200)
+          return
+        }
+        activeTimer = setTimeout(tick, 55)
+      } else {
+        // Backspacing
+        charIndex--
+        displayedHeadline = currentPhrase.slice(0, charIndex)
+
+        if (charIndex === 0) {
+          // Finished erasing, advance to next phrase
+          isDeleting = false
+          phraseIndex = (phraseIndex + 1) % headlines.length
+          activeTimer = setTimeout(tick, 450)
+          return
+        }
+        activeTimer = setTimeout(tick, 28)
+      }
+    }
+
+    activeTimer = setTimeout(tick, 250)
+  }
+
+  onDestroy(() => {
+    if (activeTimer) clearTimeout(activeTimer)
+  })
+
   onMount(async () => {
+    runTypewriter()
     const [s, agg] = await Promise.all([getAllSkills(), getAggregates()])
     skills = s
     aggregates = agg
@@ -93,9 +150,8 @@
       <div class="span-12 hero-card card">
         <div class="hero-content">
           <p class="hero-eyebrow text-caption">MCA &amp; MSc CS · 2025–27 Batch</p>
-          <h1 class="text-hero hero-heading">
-            One place to discover<br/>
-            <span class="accent-text">89 brilliant minds.</span>
+          <h1 class="text-hero hero-heading" aria-label="O(1) lookup for great hires">
+            <span class="typed-text">{displayedHeadline}</span><span class="typing-cursor" aria-hidden="true"></span>
           </h1>
           <p class="hero-sub text-body">
             Browse skills, projects, and profiles — from data scientists to full-stack engineers.
@@ -226,8 +282,26 @@
   }
   .hero-content { position: relative; z-index: 2; max-width: 600px; }
   .hero-eyebrow { letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.75rem; }
-  .hero-heading { line-height: 1.15; margin-bottom: 0.875rem; }
-  .accent-text { color: var(--accent); }
+  .hero-heading {
+    line-height: 1.15;
+    margin-bottom: 0.875rem;
+    min-height: 2.3em;
+  }
+  .typed-text { color: var(--text-primary); }
+  .typing-cursor {
+    display: inline-block;
+    width: 3px;
+    height: 0.85em;
+    vertical-align: -0.05em;
+    background-color: var(--primary);
+    margin-left: 4px;
+    border-radius: 1.5px;
+    animation: blink 0.8s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
   .hero-sub { color: var(--text-secondary); margin-bottom: 1.75rem; }
   .hero-ctas { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 
