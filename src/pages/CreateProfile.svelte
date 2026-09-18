@@ -10,15 +10,17 @@
 
   async function handleSave(formData) {
     if (!$user) return
-    const { projects, certs, ...studentData } = formData
+    const { projects = [], certs = [], ...studentData } = formData
     await createStudent($user.uid, { ...studentData, skillIds: studentData.skillIds || [] })
 
     // Add sub-collections
     for (const p of projects) {
-      await addProject($user.uid, p)
+      const { id, createdAt, ...pData } = p
+      await addProject($user.uid, pData)
     }
     for (const c of certs) {
-      await addCert($user.uid, c)
+      const { id, createdAt, ...cData } = c
+      await addCert($user.uid, cData)
     }
 
     await loadCurrentStudent($user.uid)

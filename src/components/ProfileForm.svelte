@@ -145,16 +145,43 @@
 
   // Project list
   function addProject() {
-    if (!newProject.title.trim()) return
-    projects = [...projects, { ...newProject, techUsed: newProject.techUsed.split(',').map(t => t.trim()).filter(Boolean) }]
+    if (!newProject.title || !newProject.title.trim()) return
+    const tech = typeof newProject.techUsed === 'string'
+      ? newProject.techUsed.split(',').map(t => t.trim()).filter(Boolean)
+      : (Array.isArray(newProject.techUsed) ? newProject.techUsed : [])
+    let link = (newProject.link || '').trim()
+    if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
+      link = 'https://' + link
+    }
+    projects = [
+      ...projects,
+      {
+        title: newProject.title.trim(),
+        description: (newProject.description || '').trim(),
+        techUsed: tech,
+        link,
+      }
+    ]
     newProject = emptyProject()
   }
   function removeProject(i) { projects = projects.filter((_, idx) => idx !== i) }
 
   // Cert list
   function addCert() {
-    if (!newCert.title.trim()) return
-    certs = [...certs, { ...newCert }]
+    if (!newCert.title || !newCert.title.trim()) return
+    let link = (newCert.link || '').trim()
+    if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
+      link = 'https://' + link
+    }
+    certs = [
+      ...certs,
+      {
+        title: newCert.title.trim(),
+        issuer: (newCert.issuer || '').trim(),
+        date: (newCert.date || '').trim(),
+        link,
+      }
+    ]
     newCert = emptyCert()
   }
   function removeCert(i) { certs = certs.filter((_, idx) => idx !== i) }
@@ -167,6 +194,14 @@
   }
 
   async function handleSubmit() {
+    // Auto-commit any in-progress project or certificate input if user didn't click "+ Add"
+    if (newProject.title && newProject.title.trim()) {
+      addProject()
+    }
+    if (newCert.title && newCert.title.trim()) {
+      addCert()
+    }
+
     if (!validate() || saving) return
     saving = true
     try {
@@ -405,20 +440,41 @@
 
   <!-- ── Projects ── -->
   <section class="form-section">
-    <h3 class="text-card section-title">Projects</h3>
-    {#each projects as p, i}
-      <div class="item-card">
-        <div class="item-header">
-          <strong>{p.title}</strong>
-          <button type="button" class="btn btn-danger btn-sm" on:click={() => removeProject(i)}>Remove</button>
-        </div>
-        {#if p.description}<p class="text-caption">{p.description}</p>{/if}
-        {#if p.techUsed?.length}<p class="text-caption">Tech: {p.techUsed.join(', ')}</p>{/if}
-        {#if p.link}<a href={p.link} target="_blank" rel="noopener" class="text-caption">{p.link}</a>{/if}
-      </div>
-    {/each}
+    <div class="section-title-row">
+      <h3 class="text-card section-title" style="margin-bottom:0">Projects</h3>
+      {#if projects.length > 0}
+        <span class="text-caption">{projects.length} added</span>
+      {/if}
+    </div>
 
-    <div class="add-item-form card" style="box-shadow:none;background:var(--accent-soft)">
+    {#if projects.length > 0}
+      <div class="items-list">
+        {#each projects as p, i}
+          <div class="item-card">
+            <div class="item-header">
+              <div class="item-title-col">
+                <strong class="text-card">{p.title}</strong>
+                {#if p.link}
+                  <a href={p.link} target="_blank" rel="noopener" class="text-caption link-external">↗ Link</a>
+                {/if}
+              </div>
+              <button type="button" class="btn btn-danger btn-sm" on:click={() => removeProject(i)}>Remove</button>
+            </div>
+            {#if p.description}<p class="text-caption" style="margin:0.25rem 0">{p.description}</p>{/if}
+            {#if p.techUsed?.length}
+              <div class="tech-chips">
+                {#each p.techUsed as t}
+                  <span class="tech-chip">{t}</span>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    {/if}
+
+    <div class="add-item-form">
+      <span class="text-card" style="font-size:0.875rem;font-weight:600">+ Add a Project</span>
       <div class="field">
         <label for="proj-title">Project title</label>
         <input id="proj-title" bind:value={newProject.title} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addProject(); } }} placeholder="Project name" />
@@ -435,25 +491,40 @@
         <label for="proj-link">Link (optional)</label>
         <input id="proj-link" bind:value={newProject.link} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addProject(); } }} type="url" placeholder="https://…" />
       </div>
-      <button type="button" class="btn btn-ghost btn-sm" on:click={addProject}>+ Add project</button>
+      <button type="button" class="btn btn-secondary btn-sm" style="align-self:flex-start" on:click={addProject}>+ Add Project to List</button>
     </div>
   </section>
 
   <!-- ── Certifications ── -->
   <section class="form-section">
-    <h3 class="text-card section-title">Certifications</h3>
-    {#each certs as c, i}
-      <div class="item-card">
-        <div class="item-header">
-          <strong>{c.title}</strong>
-          <button type="button" class="btn btn-danger btn-sm" on:click={() => removeCert(i)}>Remove</button>
-        </div>
-        <p class="text-caption">{c.issuer}{c.date ? ' · ' + c.date : ''}</p>
-        {#if c.link}<a href={c.link} target="_blank" rel="noopener" class="text-caption">{c.link}</a>{/if}
-      </div>
-    {/each}
+    <div class="section-title-row">
+      <h3 class="text-card section-title" style="margin-bottom:0">Certifications</h3>
+      {#if certs.length > 0}
+        <span class="text-caption">{certs.length} added</span>
+      {/if}
+    </div>
 
-    <div class="add-item-form card" style="box-shadow:none;background:var(--accent-soft)">
+    {#if certs.length > 0}
+      <div class="items-list">
+        {#each certs as c, i}
+          <div class="item-card">
+            <div class="item-header">
+              <div class="item-title-col">
+                <strong class="text-card">{c.title}</strong>
+                {#if c.link}
+                  <a href={c.link} target="_blank" rel="noopener" class="text-caption link-external">↗ Link</a>
+                {/if}
+              </div>
+              <button type="button" class="btn btn-danger btn-sm" on:click={() => removeCert(i)}>Remove</button>
+            </div>
+            <p class="text-caption">{c.issuer}{c.date ? ' · ' + c.date : ''}</p>
+          </div>
+        {/each}
+      </div>
+    {/if}
+
+    <div class="add-item-form">
+      <span class="text-card" style="font-size:0.875rem;font-weight:600">+ Add a Certification</span>
       <div class="field">
         <label for="cert-title">Certificate title</label>
         <input id="cert-title" bind:value={newCert.title} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCert(); } }} placeholder="e.g. AWS Certified Developer" />
@@ -470,7 +541,7 @@
         <label for="cert-link">Credential URL (optional)</label>
         <input id="cert-link" bind:value={newCert.link} on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCert(); } }} type="url" placeholder="https://…" />
       </div>
-      <button type="button" class="btn btn-ghost btn-sm" on:click={addCert}>+ Add certificate</button>
+      <button type="button" class="btn btn-secondary btn-sm" style="align-self:flex-start" on:click={addCert}>+ Add Certificate to List</button>
     </div>
   </section>
 
@@ -557,8 +628,20 @@
     transition: color 0.15s;
   }
   .resume-clear:hover { color: var(--danger, #dc2626); }
-  .item-card { background: var(--surface); border: none; box-shadow: var(--shadow-neu-sm); border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
-  .item-header { display: flex; align-items: center; justify-content: space-between; }
+  .item-card { background: var(--surface); border: none; box-shadow: var(--shadow-neu-sm); border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.375rem; }
+  .item-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .item-title-col { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .items-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .section-title-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .link-external { text-decoration: underline; color: var(--text-primary); font-weight: 500; }
+  .tech-chips { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+  .tech-chip {
+    padding: 0.15rem 0.5rem; border-radius: 999px;
+    font-size: 0.75rem; font-weight: 500;
+    background: var(--bg);
+    box-shadow: var(--shadow-neu-inset-sm);
+    color: var(--text-secondary);
+  }
   .add-item-form { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; border-radius: 1rem; background: var(--bg); box-shadow: var(--shadow-neu-inset); }
   .form-actions { display: flex; justify-content: flex-end; padding-top: 1rem; }
   .field-error { font-size: 0.8rem; color: var(--danger, #dc2626); margin-top: -0.25rem; }

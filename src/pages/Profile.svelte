@@ -14,10 +14,13 @@
   let skillMap = {}
   let loading  = true
   let notFound = false
+  let loadedUid = null
 
-  onMount(async () => {
-    const uid = params.id
+  async function loadProfile(uid) {
     if (!uid) { notFound = true; loading = false; return }
+    loadedUid = uid
+    loading = true
+    notFound = false
 
     try {
       const [s, p, c, skills] = await Promise.all([
@@ -28,13 +31,24 @@
       ])
       if (!s) { notFound = true; loading = false; return }
       student  = s
-      projects = p
-      certs    = c
-      skillMap = Object.fromEntries(skills.map(sk => [sk.id, sk.name]))
+      projects = p || []
+      certs    = c || []
+      skillMap = Object.fromEntries((skills || []).map(sk => [sk.id, sk.name]))
     } catch (e) {
+      console.error('Error loading profile:', e)
       notFound = true
     } finally {
       loading = false
+    }
+  }
+
+  $: if (params?.id && params.id !== loadedUid) {
+    loadProfile(params.id)
+  }
+
+  onMount(() => {
+    if (params?.id && params.id !== loadedUid) {
+      loadProfile(params.id)
     }
   })
 
@@ -266,24 +280,34 @@
 
   .profile-main { display: flex; flex-direction: column; gap: 1.25rem; }
   .profile-section { padding: 1.5rem; }
-  .section-title { margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--surface-border); }
+  .section-title { margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.06); }
   .skills-wrap { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
   .projects-list { display: flex; flex-direction: column; gap: 1.25rem; }
-  .project-item { padding-bottom: 1.25rem; border-bottom: 1px solid var(--surface-border); }
+  .project-item { padding-bottom: 1.25rem; border-bottom: 1px solid rgba(0,0,0,0.06); }
   .project-item:last-child { border-bottom: none; padding-bottom: 0; }
   .project-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
   .tech-chips { display: flex; flex-wrap: wrap; gap: 0.375rem; }
   .tech-chip {
-    padding: 0.15rem 0.5rem; border-radius: 999px;
+    padding: 0.2rem 0.6rem; border-radius: 999px;
     font-size: 0.75rem; font-weight: 500;
-    background: var(--surface-border); color: var(--text-secondary);
+    background: var(--bg);
+    box-shadow: var(--shadow-neu-inset-sm);
+    color: var(--text-secondary);
   }
 
   .certs-list { display: flex; flex-direction: column; gap: 1rem; }
-  .cert-item { padding-bottom: 1rem; border-bottom: 1px solid var(--surface-border); }
+  .cert-item { padding-bottom: 1rem; border-bottom: 1px solid rgba(0,0,0,0.06); }
   .cert-item:last-child { border-bottom: none; padding-bottom: 0; }
   .cert-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+
+  @media (prefers-color-scheme: dark) {
+    .section-title,
+    .project-item,
+    .cert-item {
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+  }
 
   .empty-profile { padding: 2rem; text-align: center; }
 </style>
