@@ -91,6 +91,10 @@
                 <span style="font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{$user.displayName || 'User'}</span>
                 <span class="text-caption" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{$user.email}</span>
               </div>
+              {#if $userRole === 'admin'}
+                <button class="dropdown-item" on:click={() => { push('/admin'); dropdownOpen = false }}>Admin Panel</button>
+                <div class="dropdown-divider"></div>
+              {/if}
               <button class="dropdown-item" on:click={handleSignOut}>Sign out</button>
               <div class="dropdown-divider"></div>
               <button class="dropdown-item danger" disabled={deleting} on:click={handleDeleteAccount}>

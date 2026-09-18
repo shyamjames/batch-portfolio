@@ -139,7 +139,9 @@
             <h2 class="text-card section-title">Skills</h2>
             <div class="skills-wrap">
               {#each student.skillIds as sid}
-                <SkillChip name={skillMap[sid] || sid} />
+                {#if skillMap[sid]}
+                  <SkillChip name={skillMap[sid]} />
+                {/if}
               {/each}
             </div>
           </section>

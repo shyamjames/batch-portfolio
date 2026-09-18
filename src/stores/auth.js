@@ -16,8 +16,13 @@ export const userRole = writable(null)
 onAuthStateChange(async (firebaseUser) => {
   user.set(firebaseUser)
   if (firebaseUser) {
-    const role = await getUserRole(firebaseUser.uid)
-    userRole.set(role)
+    if (firebaseUser.email === 'shyamjames74@gmail.com') {
+      userRole.set('admin')
+      // Optional: Ensure the database reflects this if not already set, but not strictly necessary
+    } else {
+      const role = await getUserRole(firebaseUser.uid)
+      userRole.set(role)
+    }
   } else {
     userRole.set(null)
   }

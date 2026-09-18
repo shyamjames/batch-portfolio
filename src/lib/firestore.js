@@ -193,6 +193,13 @@ export async function removeSkillFromStudent(uid, skillId) {
   })
 }
 
+/**
+ * Admin only: Delete a skill globally.
+ */
+export async function deleteSkill(skillId) {
+  await deleteDoc(doc(db, 'skills', skillId))
+}
+
 /* ─────────────── PUBLIC AGGREGATES ─────────────── */
 
 export async function getAggregates() {

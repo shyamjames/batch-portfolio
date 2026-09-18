@@ -343,7 +343,9 @@
     <h3 class="text-card section-title">Skills</h3>
     <div class="skills-chips">
       {#each skillIds as sid}
-        <SkillChip name={skillMap[sid] || sid} removable on_remove={() => removeSkill(sid)} />
+        {#if skillMap[sid]}
+          <SkillChip name={skillMap[sid]} removable on_remove={() => removeSkill(sid)} />
+        {/if}
       {/each}
     </div>
     <div class="skill-autocomplete" style="position:relative">
