@@ -23,7 +23,7 @@
       let redirect = false
       
       if (!$userRole) {
-        if (loc !== '/onboarding') { push('/onboarding'); redirect = true }
+        if (loc !== '/create-profile') { push('/create-profile'); redirect = true }
       } else if ($userRole === 'student') {
         if (requireProfile && !$hasProfile) {
           push('/create-profile')

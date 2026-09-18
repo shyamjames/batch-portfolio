@@ -7,25 +7,28 @@ export const user = writable(null)
 /** True once onAuthStateChanged has fired at least once */
 export const authReady = writable(false)
 
-import { getUserRole } from '../lib/firestore.js'
+import { getUserRole, setUserRole } from '../lib/firestore.js'
 
-/** The user's role: 'student' | 'viewer' | null */
+/** The user's role: 'student' | 'viewer' | 'admin' | null */
 export const userRole = writable(null)
 
 // Subscribe to Firebase auth state changes
 onAuthStateChange(async (firebaseUser) => {
-  user.set(firebaseUser)
   if (firebaseUser) {
     if (firebaseUser.email === 'shyamjames74@gmail.com') {
       userRole.set('admin')
-      // Optional: Ensure the database reflects this if not already set, but not strictly necessary
     } else {
-      const role = await getUserRole(firebaseUser.uid)
+      let role = await getUserRole(firebaseUser.uid)
+      if (!role) {
+        await setUserRole(firebaseUser.uid, 'student')
+        role = 'student'
+      }
       userRole.set(role)
     }
   } else {
     userRole.set(null)
   }
+  user.set(firebaseUser)
   authReady.set(true)
 })
 

@@ -11,7 +11,6 @@ import NotFound      from './pages/NotFound.svelte'
 export const routes = {
   '/':               Landing,
   '/login':          Login,
-  '/onboarding':     Onboarding,
   '/create-profile': CreateProfile,
   '/directory':      Directory,
   '/profile/:id':    Profile,

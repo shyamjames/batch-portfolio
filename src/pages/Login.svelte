@@ -9,8 +9,7 @@
   let error = ''
 
   $: if ($authReady && $user && $studentLoaded && $userRole !== undefined) {
-    if (!$userRole) push('/onboarding')
-    else if ($userRole === 'student' && !$hasProfile) push('/create-profile')
+    if (!$userRole || ($userRole === 'student' && !$hasProfile)) push('/create-profile')
     else push('/directory')
   }
   
