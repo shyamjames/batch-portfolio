@@ -70,6 +70,26 @@
     }
   }
 
+  async function handleRecalculateStats() {
+    try {
+      let mca = 0, msc = 0
+      students.forEach(s => {
+        if (s.batch === 'MCA') mca++
+        if (s.batch === 'MSc CS') msc++
+      })
+      const { doc, setDoc } = await import('firebase/firestore')
+      const { db } = await import('../lib/firebase.js')
+      await setDoc(doc(db, 'meta', 'aggregates'), {
+        mcaCount: mca,
+        mscCount: msc
+      })
+      if (window.__showToast) window.__showToast("Stats recalculated successfully!", "success")
+    } catch (e) {
+      console.error(e)
+      alert("Failed to recalculate stats: " + e.message)
+    }
+  }
+
 </script>
 
 <svelte:head>
@@ -78,9 +98,12 @@
 
 <RouteGuard requireAuth>
   <div class="admin-page page-wrapper">
-    <div class="card header-card">
+    <div class="card header-card" style="position: relative;">
       <h1 class="text-section">Admin Dashboard</h1>
       <p class="text-caption">Manage students and global skills</p>
+      <button class="btn btn-ghost btn-sm" style="position: absolute; top: 1rem; right: 1rem;" on:click={handleRecalculateStats}>
+        Recalculate Stats
+      </button>
     </div>
 
     {#if loading}

@@ -65,20 +65,46 @@ export async function getStudent(uid) {
 }
 
 export async function createStudent(uid, data) {
-  await setDoc(doc(db, 'students', uid), {
+  const ref = doc(db, 'students', uid)
+  const snap = await getDoc(ref)
+  const isNew = !snap.exists()
+  
+  await setDoc(ref, {
     ...data,
-    createdAt: serverTimestamp(),
+    createdAt: isNew ? serverTimestamp() : snap.data().createdAt,
     updatedAt: serverTimestamp(),
   })
-  // Update public batch aggregate
-  await updateAggregates(data.batch, 1)
+  
+  // Only increment if it's genuinely a new profile
+  if (isNew) {
+    await updateAggregates(data.batch, 1)
+  }
 }
 
 export async function updateStudent(uid, data) {
-  await updateDoc(doc(db, 'students', uid), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  })
+  const ref = doc(db, 'students', uid)
+  const snap = await getDoc(ref)
+  
+  if (snap.exists()) {
+    const oldBatch = snap.data().batch
+    const newBatch = data.batch
+    
+    await updateDoc(ref, {
+      ...data,
+      updatedAt: serverTimestamp(),
+    })
+    
+    // Adjust aggregates if they changed their batch
+    if (oldBatch && newBatch && oldBatch !== newBatch) {
+      await updateAggregates(oldBatch, -1)
+      await updateAggregates(newBatch, 1)
+    }
+  } else {
+    await updateDoc(ref, {
+      ...data,
+      updatedAt: serverTimestamp(),
+    })
+  }
 }
 
 /** Returns all students (auth required via rules) */
