@@ -2,10 +2,11 @@
    app.css — Global Design System (Neumorphism & Bento Grid)
    ===================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700;800&display=swap');
 
 /* ---------- Color Tokens (Light) ---------- */
 :root {
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --bg: #E7E5E4;
   --surface: #E7E5E4;
   --surface-border: transparent;

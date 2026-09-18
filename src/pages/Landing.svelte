@@ -269,7 +269,10 @@
   .hero-content { position: relative; z-index: 2; max-width: 600px; }
   .hero-eyebrow { letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.75rem; }
   .hero-heading {
-    line-height: 1.15;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-weight: 700;
+    line-height: 1.18;
+    letter-spacing: -0.025em;
     margin-bottom: 0.875rem;
     min-height: 2.3em;
   }
