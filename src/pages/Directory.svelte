@@ -9,7 +9,7 @@
   let loading     = true
 
   // Filters
-  let nameFilter  = ''
+  let textFilter  = ''
   let batchFilter = 'all'
   let skillFilter = []    // array of skillIds
 
@@ -17,7 +17,7 @@
   $: qs = new URLSearchParams($querystring || '')
   $: {
     const q = qs.get('q')
-    if (q && !nameFilter) nameFilter = q
+    if (q && !textFilter) textFilter = q
     const sk = qs.get('skill')
     if (sk && !skillFilter.includes(sk)) skillFilter = [sk]
   }
@@ -37,10 +37,16 @@
   })
 
   $: filtered = allStudents.filter(s => {
-    const nameOk  = !nameFilter || (s.name || '').toLowerCase().includes(nameFilter.toLowerCase())
+    const q = textFilter.toLowerCase().trim()
+    const textOk = !q || 
+      (s.name || '').toLowerCase().includes(q) ||
+      (s.bio || '').toLowerCase().includes(q) ||
+      (s.batch || '').toLowerCase().includes(q) ||
+      (s.skillNames || []).some(skill => skill.toLowerCase().includes(q))
+      
     const batchOk = batchFilter === 'all' || s.batch === batchFilter
     const skillOk = skillFilter.length === 0 || skillFilter.every(sid => (s.skillIds || []).includes(sid))
-    return nameOk && batchOk && skillOk
+    return textOk && batchOk && skillOk
   })
 
   function toggleSkillFilter(id) {
@@ -52,7 +58,7 @@
   }
 
   function clearFilters() {
-    nameFilter = ''
+    textFilter = ''
     batchFilter = 'all'
     skillFilter = []
   }
@@ -78,9 +84,9 @@
         class="filter-search"
         id="dir-search"
         type="search"
-        placeholder="Search by name…"
-        bind:value={nameFilter}
-        aria-label="Search by name"
+        placeholder="Search by name, skills, bio…"
+        bind:value={textFilter}
+        aria-label="Search students"
       />
 
       <div class="filter-group">
@@ -118,7 +124,7 @@
         {/if}
       </div>
 
-      {#if nameFilter || batchFilter !== 'all' || skillFilter.length}
+      {#if textFilter || batchFilter !== 'all' || skillFilter.length}
         <button class="btn btn-ghost btn-sm" on:click={clearFilters}>Clear filters</button>
       {/if}
     </div>
