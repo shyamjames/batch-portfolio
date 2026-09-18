@@ -229,8 +229,22 @@ export async function deleteSkill(skillId) {
 /* ─────────────── PUBLIC AGGREGATES ─────────────── */
 
 export async function getAggregates() {
-  const snap = await getDoc(doc(db, 'meta', 'aggregates'))
-  return snap.exists() ? snap.data() : { mcaCount: 0, mscCount: 0 }
+  try {
+    const snap = await getDocs(collection(db, 'students'))
+    let mcaCount = 0
+    let mscCount = 0
+    snap.forEach(d => {
+      const b = d.data().batch
+      if (b === 'MCA') mcaCount++
+      else if (b === 'MSc CS') mscCount++
+    })
+    // Keep meta/aggregates synced in background
+    setDoc(doc(db, 'meta', 'aggregates'), { mcaCount, mscCount }).catch(() => {})
+    return { mcaCount, mscCount }
+  } catch {
+    const snap = await getDoc(doc(db, 'meta', 'aggregates'))
+    return snap.exists() ? snap.data() : { mcaCount: 0, mscCount: 0 }
+  }
 }
 
 export async function updateAggregates(batch, delta) {
