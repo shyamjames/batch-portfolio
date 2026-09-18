@@ -1,6 +1,9 @@
 import { getApps, initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { GoogleGenAI } from '@google/genai';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
 
 let initError = null;
 
@@ -64,7 +67,10 @@ export default async function handler(req, res) {
       throw new Error(`Failed to fetch PDF from Cloudinary: ${pdfResponse.statusText}`);
     }
     const arrayBuffer = await pdfResponse.arrayBuffer();
-    const pdfBase64 = Buffer.from(arrayBuffer).toString('base64');
+    
+    // Extract text from the PDF buffer
+    const pdfData = await pdfParse(Buffer.from(arrayBuffer));
+    const resumeText = pdfData.text;
 
     // 4. Initialize Gemini
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -89,12 +95,7 @@ Only include items explicitly present in the resume. Do not invent or infer anyt
         response = await ai.models.generateContent({
           model: 'gemini-3.6-flash',
           contents: [
-            {
-              inlineData: {
-                data: pdfBase64,
-                mimeType: 'application/pdf'
-              }
-            },
+            resumeText,
             prompt
           ],
           config: {
