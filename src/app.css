@@ -1,33 +1,48 @@
 /* =====================================================================
-   app.css — Global Design System (Neumorphism from design.md)
+   app.css — Global Design System (Neumorphism & Bento Grid)
    ===================================================================== */
 
-/* ---------- Google Font ---------- */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* ---------- Color Tokens (Light) ---------- */
 :root {
   --bg: #E7E5E4;
   --surface: #E7E5E4;
-  --surface-border: transparent; /* Neumorphism relies on shadows, not borders */
+  --surface-border: transparent;
+  --primary: #111111;
+  --secondary: #F1F2F5;
   --text-primary: #1E2938;
   --text-secondary: #5c5c66;
-  --accent: #111111;
-  --accent-soft: rgba(17, 17, 17, 0.08);
   --success: #00A63D;
   --warning: #FE9900;
   --danger: #FF2157;
+  --accent: #111111;
   
+  --chart-1: #111111;
+  --chart-2: #00A63D;
+  --chart-3: #FE9900;
+  --chart-4: #FF2157;
+
   /* Neumorphic Shadows (Light) */
-  --neu-out: 6px 6px 12px #c8c6c5, -6px -6px 12px #ffffff;
-  --neu-in: inset 4px 4px 8px #c8c6c5, inset -4px -4px 8px #ffffff;
-  --neu-out-sm: 3px 3px 6px #c8c6c5, -3px -3px 6px #ffffff;
-  --neu-in-sm: inset 2px 2px 4px #c8c6c5, inset -2px -2px 4px #ffffff;
-  --neu-out-hover: 8px 8px 16px #c8c6c5, -8px -8px 16px #ffffff;
+  --shadow-neu-light: rgba(255, 255, 255, 0.75);
+  --shadow-neu-dark: rgba(163, 161, 159, 0.55);
+  
+  --shadow-neu: 8px 8px 16px var(--shadow-neu-dark),
+                -8px -8px 16px var(--shadow-neu-light);
+  --shadow-neu-inset: inset 4px 4px 8px var(--shadow-neu-dark),
+                      inset -4px -4px 8px var(--shadow-neu-light);
+  
+  /* Additional variants */
+  --shadow-neu-sm: 4px 4px 8px var(--shadow-neu-dark),
+                   -4px -4px 8px var(--shadow-neu-light);
+  --shadow-neu-inset-sm: inset 2px 2px 4px var(--shadow-neu-dark),
+                         inset -2px -2px 4px var(--shadow-neu-light);
+  --shadow-neu-hover: 10px 10px 20px var(--shadow-neu-dark),
+                      -10px -10px 20px var(--shadow-neu-light);
 
   /* Bento grid */
   --grid-gap: 1.5rem;
-  --card-radius: 1.25rem;
+  --card-radius: 1rem;
   --card-padding: 1.5rem;
   --card-padding-mobile: 1.25rem;
 }
@@ -35,43 +50,78 @@
 /* ---------- Dark Mode (system) ---------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0a0a0a;
-    --surface: #0a0a0a;
-    --text-primary: #ededed;
-    --text-secondary: #888888;
-    --accent: #ededed;
-    --accent-soft: rgba(237, 237, 237, 0.1);
+    --bg: #17181A;
+    --surface: #17181A;
+    --primary: #F1F2F5;
+    --secondary: #1E2938;
+    --text-primary: #F1F2F5;
+    --text-secondary: #9a9aa5;
+    --success: #2ED860;
+    --warning: #FFB13D;
+    --danger: #FF5C7C;
+    --accent: #F1F2F5;
+    
+    --chart-1: #F1F2F5;
+    --chart-2: #2ED860;
+    --chart-3: #FFB13D;
+    --chart-4: #FF5C7C;
 
-    /* Neumorphic Shadows (Pitch Black Dark Mode) */
-    --neu-out: 6px 6px 12px #000000, -6px -6px 12px #141414;
-    --neu-in: inset 4px 4px 8px #000000, inset -4px -4px 8px #141414;
-    --neu-out-sm: 3px 3px 6px #000000, -3px -3px 6px #141414;
-    --neu-in-sm: inset 2px 2px 4px #000000, inset -2px -2px 4px #141414;
-    --neu-out-hover: 8px 8px 16px #000000, -8px -8px 16px #1a1a1a;
+    --shadow-neu-light: rgba(255, 255, 255, 0.04);
+    --shadow-neu-dark: rgba(0, 0, 0, 0.6);
+    
+    --shadow-neu: 8px 8px 16px var(--shadow-neu-dark),
+                  -8px -8px 16px var(--shadow-neu-light);
+    --shadow-neu-inset: inset 4px 4px 8px var(--shadow-neu-dark),
+                        inset -4px -4px 8px var(--shadow-neu-light);
+    
+    --shadow-neu-sm: 4px 4px 8px var(--shadow-neu-dark),
+                     -4px -4px 8px var(--shadow-neu-light);
+    --shadow-neu-inset-sm: inset 2px 2px 4px var(--shadow-neu-dark),
+                           inset -2px -2px 4px var(--shadow-neu-light);
+    --shadow-neu-hover: 10px 10px 20px var(--shadow-neu-dark),
+                        -10px -10px 20px var(--shadow-neu-light);
   }
 }
 
 /* ---------- Dark Mode (manual override) ---------- */
 [data-theme="dark"] {
-  --bg: #0a0a0a;
-  --surface: #0a0a0a;
-  --text-primary: #ededed;
-  --text-secondary: #888888;
-  --accent: #ededed;
-  --accent-soft: rgba(237, 237, 237, 0.1);
+  --bg: #17181A;
+  --surface: #17181A;
+  --primary: #F1F2F5;
+  --secondary: #1E2938;
+  --text-primary: #F1F2F5;
+  --text-secondary: #9a9aa5;
+  --success: #2ED860;
+  --warning: #FFB13D;
+  --danger: #FF5C7C;
+  --accent: #F1F2F5;
+  
+  --chart-1: #F1F2F5;
+  --chart-2: #2ED860;
+  --chart-3: #FFB13D;
+  --chart-4: #FF5C7C;
 
-  --neu-out: 6px 6px 12px #000000, -6px -6px 12px #141414;
-  --neu-in: inset 4px 4px 8px #000000, inset -4px -4px 8px #141414;
-  --neu-out-sm: 3px 3px 6px #000000, -3px -3px 6px #141414;
-  --neu-in-sm: inset 2px 2px 4px #000000, inset -2px -2px 4px #141414;
-  --neu-out-hover: 8px 8px 16px #000000, -8px -8px 16px #1a1a1a;
+  --shadow-neu-light: rgba(255, 255, 255, 0.04);
+  --shadow-neu-dark: rgba(0, 0, 0, 0.6);
+  
+  --shadow-neu: 8px 8px 16px var(--shadow-neu-dark),
+                -8px -8px 16px var(--shadow-neu-light);
+  --shadow-neu-inset: inset 4px 4px 8px var(--shadow-neu-dark),
+                      inset -4px -4px 8px var(--shadow-neu-light);
+  
+  --shadow-neu-sm: 4px 4px 8px var(--shadow-neu-dark),
+                   -4px -4px 8px var(--shadow-neu-light);
+  --shadow-neu-inset-sm: inset 2px 2px 4px var(--shadow-neu-dark),
+                         inset -2px -2px 4px var(--shadow-neu-light);
+  --shadow-neu-hover: 10px 10px 20px var(--shadow-neu-dark),
+                      -10px -10px 20px var(--shadow-neu-light);
 }
 
 /* ---------- Reset & Base ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  font-family: 'JetBrains Mono', monospace; /* Body text */
+  font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text-primary);
   font-size: 15px;
@@ -85,13 +135,8 @@ body {
   background: var(--bg);
 }
 
-h1, h2, h3, h4, h5, h6, .text-hero, .text-section, .text-card {
-  font-family: 'Space Mono', monospace;
-  letter-spacing: -0.02em;
-}
-
 img { display: block; max-width: 100%; }
-a { color: var(--accent); text-decoration: none; }
+a { color: var(--primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 button, input, select, textarea {
@@ -102,10 +147,10 @@ button, input, select, textarea {
 
 /* ---------- Typography Scale ---------- */
 .text-hero    { font-size: 2.5rem;  font-weight: 700; line-height: 1.2; }
-.text-section { font-size: 1.5rem;  font-weight: 700; line-height: 1.3; }
-.text-card    { font-size: 1rem;    font-weight: 700; }
+.text-section { font-size: 1.5rem;  font-weight: 600; line-height: 1.3; }
+.text-card    { font-size: 1rem;    font-weight: 600; }
 .text-body    { font-size: 0.9375rem; font-weight: 400; }
-.text-stat    { font-size: 2.25rem; font-weight: 700; font-family: 'Space Mono', monospace; }
+.text-stat    { font-size: 2.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .text-caption { font-size: 0.8125rem; font-weight: 400; color: var(--text-secondary); }
 
 /* ---------- Bento Grid ---------- */
@@ -117,20 +162,19 @@ button, input, select, textarea {
   width: 100%;
 }
 
-@media (min-width: 768px) {
-  :root { --grid-gap: 1.5rem; }
-}
-
-.span-3  { grid-column: span 3; }
-.span-4  { grid-column: span 4; }
-.span-6  { grid-column: span 6; }
-.span-12 { grid-column: span 12; }
-.row-2   { grid-row: span 2; }
-.row-3   { grid-row: span 3; }
-
 @media (max-width: 767px) {
+  :root { --grid-gap: 1rem; }
   .bento-grid { grid-template-columns: repeat(4, 1fr); }
   .span-3, .span-4, .span-6, .span-12 { grid-column: span 4; }
+}
+
+@media (min-width: 768px) {
+  .span-3  { grid-column: span 3; }
+  .span-4  { grid-column: span 4; }
+  .span-6  { grid-column: span 6; }
+  .span-12 { grid-column: span 12; }
+  .row-2   { grid-row: span 2; }
+  .row-3   { grid-row: span 3; }
 }
 
 /* ---------- Card base (Neumorphic) ---------- */
@@ -138,14 +182,14 @@ button, input, select, textarea {
   background: var(--surface);
   border-radius: var(--card-radius);
   padding: var(--card-padding);
-  box-shadow: var(--neu-out);
-  border: none; /* No borders in neumorphism */
-  transition: box-shadow 200ms ease-out, transform 200ms ease-out;
+  box-shadow: var(--shadow-neu);
+  border: none;
+  transition: box-shadow 150ms ease-out, transform 150ms ease-out;
 }
 
 @media (min-width: 768px) {
   .card:hover {
-    box-shadow: var(--neu-out-hover);
+    box-shadow: var(--shadow-neu-hover);
     transform: translateY(-2px);
   }
 }
@@ -162,28 +206,27 @@ button, input, select, textarea {
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
-  font-family: 'Space Mono', monospace;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.9375rem;
   cursor: pointer;
   border: none;
   background: var(--surface);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--shadow-neu-sm);
   color: var(--text-primary);
-  transition: all 0.2s ease;
+  transition: all 0.15s ease-out;
 }
-.btn:hover:not(:disabled) { box-shadow: var(--neu-out); transform: translateY(-1px); }
-.btn:active:not(:disabled) { box-shadow: var(--neu-in-sm); transform: translateY(1px); }
+.btn:hover:not(:disabled) { box-shadow: var(--shadow-neu); transform: translateY(-1px); }
+.btn:active:not(:disabled) { box-shadow: var(--shadow-neu-inset-sm); transform: translateY(1px); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; border: 1px solid rgba(128,128,128,0.2); }
 
-/* Primary Button (Vercel-style solid background) */
+/* Primary Button */
 .btn-primary { 
-  background: var(--accent);
+  background: var(--primary);
   color: var(--bg);
-  box-shadow: 0 4px 14px 0 var(--accent-soft);
+  box-shadow: 0 4px 14px 0 rgba(0,0,0,0.2);
 }
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.23);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
   opacity: 0.9;
 }
 .btn-primary:active:not(:disabled) {
@@ -193,17 +236,17 @@ button, input, select, textarea {
 .btn-ghost { 
   box-shadow: none;
   background: transparent;
-  border: 1px solid transparent; /* Ghost buttons stay flat until hovered */
 }
 .btn-ghost:hover:not(:disabled) {
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--shadow-neu-sm);
 }
 .btn-ghost:active:not(:disabled) {
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--shadow-neu-inset-sm);
 }
 
 .btn-danger { 
-  color: var(--danger);
+  background: var(--danger);
+  color: #fff;
 }
 .btn-sm { padding: 0.4rem 0.875rem; font-size: 0.8125rem; }
 .btn-lg { padding: 0.875rem 1.75rem; font-size: 1rem; }
@@ -230,14 +273,14 @@ button, input, select, textarea {
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   color: var(--text-primary);
-  box-shadow: var(--neu-in);
-  transition: all 0.2s;
+  box-shadow: var(--shadow-neu-inset);
+  transition: all 0.15s;
   width: 100%;
 }
 .field input:focus,
 .field select:focus,
 .field textarea:focus { 
-  box-shadow: var(--neu-in), 0 0 0 2px var(--accent-soft); 
+  box-shadow: var(--shadow-neu-inset), 0 0 0 2px var(--primary); 
 }
 .field textarea { resize: vertical; min-height: 100px; }
 
@@ -248,14 +291,13 @@ button, input, select, textarea {
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
   font-size: 0.75rem;
-  font-weight: 700;
-  font-family: 'Space Mono', monospace;
+  font-weight: 600;
   background: var(--surface);
-  box-shadow: var(--neu-out-sm);
-  color: var(--accent);
+  box-shadow: var(--shadow-neu-sm);
+  color: var(--primary);
 }
-.badge-mca { color: var(--accent); }
-.badge-msc { color: var(--text-primary); }
+.badge-mca { color: var(--primary); }
+.badge-msc { color: var(--text-secondary); }
 
 /* ---------- Chip ---------- */
 .chip {
@@ -266,15 +308,14 @@ button, input, select, textarea {
   border-radius: 999px;
   font-size: 0.8125rem;
   font-weight: 600;
-  font-family: 'Space Mono', monospace;
   background: var(--surface);
-  box-shadow: var(--neu-out-sm);
-  color: var(--accent);
+  box-shadow: var(--shadow-neu-sm);
+  color: var(--primary);
   border: none;
-  transition: all 0.2s;
+  transition: all 0.15s;
   cursor: default;
 }
-.chip:hover { box-shadow: var(--neu-out); transform: translateY(-1px); }
+.chip:hover { box-shadow: var(--shadow-neu); transform: translateY(-1px); }
 .chip-remove {
   background: none;
   border: none;
@@ -297,7 +338,7 @@ button, input, select, textarea {
 /* ---------- Skeleton Loader ---------- */
 .skeleton {
   background: var(--bg);
-  box-shadow: var(--neu-in);
+  box-shadow: var(--shadow-neu-inset);
   animation: pulse 1.5s infinite ease-in-out;
   border-radius: 0.5rem;
 }
@@ -310,19 +351,18 @@ button, input, select, textarea {
 .avatar {
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: var(--neu-out-sm);
-  border: 4px solid var(--surface); /* Gives it a framed look */
+  box-shadow: var(--shadow-neu-sm);
+  border: 4px solid var(--surface);
 }
 .avatar-placeholder {
   border-radius: 50%;
   background: var(--surface);
-  box-shadow: var(--neu-in);
+  box-shadow: var(--shadow-neu-inset);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-family: 'Space Mono', monospace;
-  color: var(--accent);
+  font-weight: 600;
+  color: var(--primary);
 }
 
 /* ---------- Count-up animation helper ---------- */
@@ -336,7 +376,7 @@ button, input, select, textarea {
 .divider {
   height: 2px;
   background: transparent;
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--shadow-neu-inset-sm);
   border: none;
   margin: 1.5rem 0;
   border-radius: 1px;
@@ -344,5 +384,5 @@ button, input, select, textarea {
 
 /* ---------- Scrollbar ---------- */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--bg); box-shadow: var(--neu-in-sm); }
+::-webkit-scrollbar-track { background: var(--bg); box-shadow: var(--shadow-neu-inset-sm); }
 ::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 999px; }

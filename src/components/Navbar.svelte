@@ -135,7 +135,7 @@
     top: 0;
     z-index: 100;
     background: var(--surface);
-    box-shadow: var(--neu-out);
+    box-shadow: var(--shadow-neu);
     margin-bottom: 2rem;
   }
   .navbar-inner {
@@ -181,11 +181,11 @@
     justify-content: center;
     cursor: pointer;
     color: var(--text-secondary);
-    box-shadow: var(--neu-out-sm);
+    box-shadow: var(--shadow-neu-sm);
     transition: all 0.15s;
     flex-shrink: 0;
   }
-  .theme-toggle:hover { box-shadow: var(--neu-in-sm); color: var(--accent); }
+  .theme-toggle:hover { box-shadow: var(--shadow-neu-inset-sm); color: var(--primary); }
 
   /* User Menu */
   .avatar-btn {
@@ -193,7 +193,7 @@
     height: 40px;
     border-radius: 50%;
     border: 3px solid var(--surface);
-    box-shadow: var(--neu-out-sm);
+    box-shadow: var(--shadow-neu-sm);
     padding: 0;
     cursor: pointer;
     overflow: hidden;
@@ -203,9 +203,9 @@
     justify-content: center;
     transition: box-shadow 0.15s;
   }
-  .avatar-btn:hover { box-shadow: var(--neu-in-sm); }
+  .avatar-btn:hover { box-shadow: var(--shadow-neu-inset-sm); }
   .avatar-img { width: 100%; height: 100%; object-fit: cover; }
-  .avatar-initial { font-weight: 700; font-family: 'Space Mono', monospace; font-size: 1rem; color: var(--accent); }
+  .avatar-initial { font-weight: 600; font-size: 1rem; color: var(--primary); }
   
   .dropdown-menu {
     position: absolute;
@@ -214,7 +214,7 @@
     width: 240px;
     background: var(--surface);
     border-radius: 1rem;
-    box-shadow: var(--neu-out-hover);
+    box-shadow: var(--shadow-neu-hover);
     padding: 0.5rem 0;
     z-index: 200;
   }
@@ -231,14 +231,13 @@
     padding: 0.6rem 1rem;
     font-size: 0.875rem;
     font-weight: 600;
-    font-family: 'Space Mono', monospace;
     color: var(--text-primary);
     background: none;
     border: none;
     cursor: pointer;
     transition: color 0.1s;
   }
-  .dropdown-item:hover { color: var(--accent); }
+  .dropdown-item:hover { color: var(--primary); }
   .dropdown-item.danger { color: var(--danger, #dc2626); }
   .dropdown-item.danger:hover { background: rgba(220, 38, 38, 0.1); }
   .dropdown-item:disabled { opacity: 0.5; cursor: not-allowed; }

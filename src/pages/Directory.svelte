@@ -169,11 +169,11 @@
     color: var(--text-primary);
     font-size: 0.9rem;
     outline: none;
-    box-shadow: var(--neu-in);
+    box-shadow: var(--shadow-neu-inset);
     transition: all 0.2s;
     width: 200px;
   }
-  .filter-search:focus { box-shadow: var(--neu-in), 0 0 0 2px var(--accent-soft); }
+  .filter-search:focus { box-shadow: var(--shadow-neu-inset), 0 0 0 2px var(--accent-soft); }
   .filter-group { display: flex; align-items: center; gap: 0.5rem; }
   .filter-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
   .filter-pills { display: flex; gap: 0.375rem; }
@@ -181,17 +181,16 @@
     padding: 0.35rem 0.875rem;
     border-radius: 999px;
     font-size: 0.8125rem;
-    font-weight: 700;
-    font-family: 'Space Mono', monospace;
+    font-weight: 600;
     background: var(--surface);
     border: none;
-    box-shadow: var(--neu-out-sm);
+    box-shadow: var(--shadow-neu-sm);
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s;
   }
-  .filter-pill.active { background: var(--surface); box-shadow: var(--neu-in-sm); color: var(--accent); }
-  .filter-pill:hover:not(.active) { box-shadow: var(--neu-out); color: var(--text-primary); }
+  .filter-pill.active { background: var(--surface); box-shadow: var(--shadow-neu-inset-sm); color: var(--primary); }
+  .filter-pill:hover:not(.active) { box-shadow: var(--shadow-neu); color: var(--text-primary); }
 
   .skill-dropdown {
     position: absolute;
@@ -203,7 +202,7 @@
     padding: 0.5rem;
     max-height: 260px;
     overflow-y: auto;
-    box-shadow: var(--neu-out-hover);
+    box-shadow: var(--shadow-neu-hover);
     width: 240px;
   }
   .skill-option {

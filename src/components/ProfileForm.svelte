@@ -486,7 +486,7 @@
 <style>
   .profile-form { display: flex; flex-direction: column; gap: 2rem; }
   .form-section { display: flex; flex-direction: column; gap: 1rem; }
-  .section-title { color: var(--text-primary); padding-bottom: 0.5rem; margin-bottom: 1rem; border-bottom: 2px solid transparent; box-shadow: 0 4px 6px -6px rgba(0,0,0,0.1); font-family: 'Space Mono', monospace; }
+  .section-title { color: var(--text-primary); padding-bottom: 0.5rem; margin-bottom: 1rem; border-bottom: 2px solid transparent; box-shadow: 0 4px 6px -6px rgba(0,0,0,0.1); }
   .skills-chips { display: flex; flex-wrap: wrap; gap: 0.375rem; min-height: 2rem; }
   .suggestions {
     position: absolute;
@@ -494,7 +494,7 @@
     left: 0; right: 0;
     background: var(--surface);
     border-radius: 1rem;
-    box-shadow: var(--neu-out-hover);
+    box-shadow: var(--shadow-neu-hover);
     list-style: none;
     z-index: 50;
     overflow: hidden;
@@ -520,7 +520,7 @@
   /* Resume drop zone */
   .resume-dropzone {
     background: var(--bg);
-    box-shadow: var(--neu-in);
+    box-shadow: var(--shadow-neu-inset);
     border: none;
     border-radius: 1rem;
     padding: 1.25rem 1rem;
@@ -536,10 +536,10 @@
     outline: none;
   }
   .resume-dropzone:hover,
-  .resume-dropzone:focus-visible { box-shadow: var(--neu-in), 0 0 0 2px var(--accent-soft); }
-  .resume-dropzone.dragging { box-shadow: var(--neu-in), 0 0 0 2px var(--accent-soft); }
-  .resume-dropzone.has-file  { background: var(--surface); box-shadow: var(--neu-out-sm); }
-  .resume-dropzone.has-error { box-shadow: var(--neu-in), 0 0 0 2px var(--danger); }
+  .resume-dropzone:focus-visible { box-shadow: var(--shadow-neu-inset), 0 0 0 2px var(--accent-soft); }
+  .resume-dropzone.dragging { box-shadow: var(--shadow-neu-inset), 0 0 0 2px var(--accent-soft); }
+  .resume-dropzone.has-file  { background: var(--surface); box-shadow: var(--shadow-neu-sm); }
+  .resume-dropzone.has-error { box-shadow: var(--shadow-neu-inset), 0 0 0 2px var(--danger); }
   .dropzone-browse { color: var(--accent); font-weight: 600; }
   .resume-file-info { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; }
   .resume-icon { flex-shrink: 0; color: var(--success); }
@@ -557,9 +557,9 @@
     transition: color 0.15s;
   }
   .resume-clear:hover { color: var(--danger, #dc2626); }
-  .item-card { background: var(--surface); border: none; box-shadow: var(--neu-out-sm); border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .item-card { background: var(--surface); border: none; box-shadow: var(--shadow-neu-sm); border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
   .item-header { display: flex; align-items: center; justify-content: space-between; }
-  .add-item-form { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; border-radius: 1rem; background: var(--bg); box-shadow: var(--neu-in); }
+  .add-item-form { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; border-radius: 1rem; background: var(--bg); box-shadow: var(--shadow-neu-inset); }
   .form-actions { display: flex; justify-content: flex-end; padding-top: 1rem; }
   .field-error { font-size: 0.8rem; color: var(--danger, #dc2626); margin-top: -0.25rem; }
 </style>
