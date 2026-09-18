@@ -163,7 +163,7 @@
               class="btn btn-primary btn-lg"
               on:click={() => push("/directory")}>Browse Directory</button
             >
-            {#if !$user}
+            {#if $authReady && !$user}
               <button class="btn btn-secondary btn-lg" on:click={handleSignIn}>
                 <svg width="18" height="18" viewBox="0 0 24 24"
                   ><path
