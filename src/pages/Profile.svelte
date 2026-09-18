@@ -122,7 +122,7 @@
           <!-- Download Resume -->
           {#if student.resumeURL}
             <a
-              href={student.resumeURL}
+              href={student.resumeURL.includes('cloudinary.com') && student.resumeURL.includes('/upload/') && !student.resumeURL.includes('fl_attachment') ? student.resumeURL.replace('/upload/', '/upload/fl_attachment/') : student.resumeURL}
               target="_blank"
               rel="noopener"
               class="btn btn-primary btn-sm resume-btn"

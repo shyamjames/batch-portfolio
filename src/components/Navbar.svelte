@@ -65,14 +65,6 @@
     <nav class="nav-links">
       <a href="/#/directory" class="nav-link">Directory</a>
       {#if $authReady && $user}
-        {#if $userRole === 'student'}
-          {#if $hasProfile}
-            <a href="/#/profile/{$user.uid}" class="nav-link">My Profile</a>
-            <a href="/#/edit" class="nav-link">Edit Profile</a>
-          {:else}
-            <a href="/#/create-profile" class="nav-link">Create Profile</a>
-          {/if}
-        {/if}
         
         <div class="user-menu-container" style="position:relative;margin-left:0.5rem">
           <button class="avatar-btn" on:click={toggleDropdown} aria-label="User menu">
@@ -91,6 +83,17 @@
                 <span style="font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{$user.displayName || 'User'}</span>
                 <span class="text-caption" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{$user.email}</span>
               </div>
+
+              {#if $userRole === 'student'}
+                {#if $hasProfile}
+                  <button class="dropdown-item" on:click={() => { push(`/profile/${$user.uid}`); dropdownOpen = false }}>My Profile</button>
+                  <button class="dropdown-item" on:click={() => { push('/edit'); dropdownOpen = false }}>Edit Profile</button>
+                {:else}
+                  <button class="dropdown-item" on:click={() => { push('/create-profile'); dropdownOpen = false }}>Create Profile</button>
+                {/if}
+                <div class="dropdown-divider"></div>
+              {/if}
+
               {#if $userRole === 'admin'}
                 <button class="dropdown-item" on:click={() => { push('/admin'); dropdownOpen = false }}>Admin Panel</button>
                 <div class="dropdown-divider"></div>
@@ -132,17 +135,22 @@
 <style>
   .navbar {
     position: sticky;
-    top: 0;
+    top: 1.5rem;
     z-index: 100;
     background: var(--surface);
     box-shadow: var(--shadow-neu);
-    margin-bottom: 2rem;
+    margin: 1.5rem auto 2rem;
+    border-radius: 999px;
+    max-width: 1280px;
+    width: calc(100% - 3rem);
+    transition: all 0.2s ease;
   }
   .navbar-inner {
     display: flex;
     align-items: center;
     gap: 1rem;
     height: 60px;
+    padding: 0 1.5rem;
   }
   .brand {
     display: flex;
