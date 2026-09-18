@@ -1,8 +1,29 @@
+const MAX_PHOTO_BYTES  = 1 * 1024 * 1024 // 1 MB
+const MAX_RESUME_BYTES = 1 * 1024 * 1024 // 1 MB
+
+/**
+ * Client-side validation for profile photos before upload.
+ * Returns an error string, or null if the file is valid.
+ */
+export function validatePhoto(file) {
+  if (!file) return 'No file selected.'
+  if (!file.type.startsWith('image/')) return 'Only image files (JPEG, PNG, WEBP, etc.) are accepted.'
+  if (file.size > MAX_PHOTO_BYTES) {
+    return `Photo too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum size is 1 MB.`
+  }
+  return null
+}
+
 /**
  * Upload a profile photo for the given uid using Cloudinary unsigned uploads.
  * Returns the public download URL.
  */
 export async function uploadPhoto(uid, file) {
+  const validationError = validatePhoto(file);
+  if (validationError) {
+    throw new Error(validationError);
+  }
+
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
   
@@ -31,8 +52,6 @@ export async function uploadPhoto(uid, file) {
 
 
 // ─── Resume helpers ───────────────────────────────────────────────────────────
-
-const MAX_RESUME_BYTES = 1 * 1024 * 1024 // 1 MB
 
 /**
  * Client-side validation before upload.

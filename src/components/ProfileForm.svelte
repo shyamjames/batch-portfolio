@@ -4,7 +4,7 @@
   import SkillChip from './SkillChip.svelte'
   import { allSkills, ensureSkillsLoaded } from '../stores/skills.js'
   import { addSkillToStudent, createAndAddSkill, removeSkillFromStudent } from '../lib/firestore.js'
-  import { uploadPhoto, uploadResume, validateResume } from '../lib/storage.js'
+  import { uploadPhoto, uploadResume, validateResume, validatePhoto } from '../lib/storage.js'
   import { user } from '../stores/auth.js'
 
   export let mode = 'create'    // 'create' | 'edit'
@@ -21,6 +21,7 @@
   let portfolio  = initial.links?.portfolio  || ''
   let photoFile    = null
   let photoPreview = initial.photoURL || null
+  let photoError   = ''
 
   // Resume
   let resumeFile   = null
@@ -109,10 +110,18 @@
 
   // Photo
   function handlePhoto(e) {
-    photoFile = e.target.files[0]
-    if (photoFile) {
-      photoPreview = URL.createObjectURL(photoFile)
+    const file = e.target.files?.[0]
+    if (!file) return
+    photoError = validatePhoto(file) || ''
+    if (photoError) {
+      photoFile = null
+      if (window.__showToast) {
+        window.__showToast(photoError, 'error')
+      }
+      return
     }
+    photoFile = file
+    photoPreview = URL.createObjectURL(file)
   }
 
   // Resume — drag-drop + click-to-browse
@@ -284,7 +293,7 @@
     <div class="uploads-row">
       <!-- Photo -->
       <div class="upload-block">
-        <p class="upload-label">Photo</p>
+        <p class="upload-label">Photo <span class="upload-hint">(max 1 MB)</span></p>
         <div class="photo-row">
           {#if photoPreview}
             <img src={photoPreview} alt="Preview" class="avatar" width="72" height="72" />
@@ -298,6 +307,9 @@
           </label>
           <input id="pf-photo" type="file" accept="image/*" on:change={handlePhoto} class="visually-hidden" />
         </div>
+        {#if photoError}
+          <p class="field-error" style="margin-top:0.25rem">{photoError}</p>
+        {/if}
       </div>
 
       <!-- Resume -->
