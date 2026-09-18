@@ -93,7 +93,7 @@
 </script>
 
 <svelte:head>
-  <title>Admin Dashboard — Batch Portfolio</title>
+  <title>Admin Dashboard — .batchrc</title>
 </svelte:head>
 
 <RouteGuard requireAuth>

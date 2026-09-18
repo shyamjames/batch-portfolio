@@ -32,7 +32,7 @@
 </script>
 
 <svelte:head>
-  <title>Sign In — Batch Portfolio</title>
+  <title>Sign In — .batchrc</title>
   <meta name="description" content="Sign in with Google to browse the batch directory." />
 </svelte:head>
 

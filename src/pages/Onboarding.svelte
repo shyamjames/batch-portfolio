@@ -43,13 +43,13 @@
 </script>
 
 <svelte:head>
-  <title>Welcome — Batch Portfolio</title>
+  <title>Welcome — .batchrc</title>
 </svelte:head>
 
 <div class="onboarding-page page-wrapper">
   <div class="onboarding-card card">
     <h1 class="text-section" style="text-align:center;margin-bottom:0.5rem">Welcome!</h1>
-    <p class="text-caption" style="text-align:center;margin-bottom:2rem">How will you be using the Batch Portfolio?</p>
+    <p class="text-caption" style="text-align:center;margin-bottom:2rem">How will you be using .batchrc?</p>
 
     <div class="role-options">
       <!-- Student Option -->

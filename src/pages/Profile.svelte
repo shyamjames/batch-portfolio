@@ -59,7 +59,7 @@
 </script>
 
 <svelte:head>
-  <title>{student?.name || 'Student'} — Batch Portfolio</title>
+  <title>{student?.name || 'Student'} — .batchrc</title>
   <meta name="description" content="{student?.name}'s profile — {student?.batch} 2025–27 batch." />
 </svelte:head>
 

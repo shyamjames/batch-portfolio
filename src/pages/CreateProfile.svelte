@@ -30,7 +30,7 @@
 </script>
 
 <svelte:head>
-  <title>Create Profile — Batch Portfolio</title>
+  <title>Create Profile — .batchrc</title>
   <meta name="description" content="Set up your student profile for the 2025–27 batch directory." />
 </svelte:head>
 

@@ -57,9 +57,9 @@
     <a href="/#/" class="brand">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
         <rect width="28" height="28" rx="7" fill="var(--accent)"/>
-        <text x="14" y="20" text-anchor="middle" font-size="14" font-weight="700" fill="white" font-family="Inter,sans-serif">BP</text>
+        <text x="14" y="19" text-anchor="middle" font-size="12" font-weight="700" fill="white" font-family="'JetBrains Mono', monospace">.rc</text>
       </svg>
-      <span>Batch Portfolio</span>
+      <span class="brand-text">.batchrc</span>
     </a>
 
     <nav class="nav-links">
@@ -149,10 +149,15 @@
     align-items: center;
     gap: 0.5rem;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.05rem;
     color: var(--text-primary);
     text-decoration: none;
     flex-shrink: 0;
+  }
+  .brand-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    letter-spacing: -0.03em;
   }
   .brand:hover { text-decoration: none; opacity: 0.85; }
   .nav-links {

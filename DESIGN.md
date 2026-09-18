@@ -1,4 +1,4 @@
-# DESIGN.md — Batch Portfolio UI
+# DESIGN.md — .batchrc UI
 
 ## 1. Layout system — Bento Grid
 

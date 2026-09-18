@@ -103,7 +103,7 @@
 </script>
 
 <svelte:head>
-  <title>Edit Profile — Batch Portfolio</title>
+  <title>Edit Profile — .batchrc</title>
   <meta name="description" content="Update your student profile details." />
 </svelte:head>
 

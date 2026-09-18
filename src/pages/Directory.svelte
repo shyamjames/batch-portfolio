@@ -59,7 +59,7 @@
 </script>
 
 <svelte:head>
-  <title>Directory — Batch Portfolio</title>
+  <title>Directory — .batchrc</title>
   <meta name="description" content="Browse all student profiles from the 2025–27 batch." />
 </svelte:head>
 

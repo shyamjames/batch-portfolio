@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-  <title>404 — Batch Portfolio</title>
+  <title>404 — .batchrc</title>
 </svelte:head>
 
 <div class="page-wrapper not-found-page">

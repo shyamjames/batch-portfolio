@@ -127,8 +127,8 @@
 </script>
 
 <svelte:head>
-  <title>Batch Portfolio · MCA &amp; MSc CS 2025–27</title>
-  <meta name="description" content="Explore the skills, projects, and profiles of 89 students from the MCA and MSc CS 2025–27 batch." />
+  <title>.batchrc · MCA &amp; MSc CS 2025–27</title>
+  <meta name="description" content="Explore the skills, projects, and profiles of students from the MCA and MSc CS 2025–27 batch." />
 </svelte:head>
 
 <div class="landing">
