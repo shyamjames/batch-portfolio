@@ -7,8 +7,8 @@ export const skillsLoaded = writable(false)
 
 let loading = false
 
-export async function ensureSkillsLoaded() {
-  if (get(skillsLoaded) || loading) return
+export async function ensureSkillsLoaded(force = false) {
+  if (!force && (get(skillsLoaded) || loading)) return
   loading = true
   try {
     const skills = await getAllSkills()

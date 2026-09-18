@@ -82,16 +82,23 @@
     showSuggestions = false
   }
 
+  let creatingSkill = false
   async function createSkill() {
-    if (!skillQuery.trim() || !$user) return
-    const uid = await createAndAddSkill($user.uid, skillQuery.trim())
-    skillIds = [...skillIds, uid]
-    skillMap[uid] = skillQuery.trim()
-    // Refresh skills store
-    await ensureSkillsLoaded()
-    skillQuery = ''
-    suggestions = []
-    showSuggestions = false
+    if (!skillQuery.trim() || !$user || creatingSkill) return
+    creatingSkill = true
+    try {
+      const uid = await createAndAddSkill($user.uid, skillQuery.trim())
+      skillMap[uid] = skillQuery.trim()
+      skillMap = skillMap
+      skillIds = [...skillIds, uid]
+      // Refresh skills store
+      await ensureSkillsLoaded(true)
+      skillQuery = ''
+      suggestions = []
+      showSuggestions = false
+    } finally {
+      creatingSkill = false
+    }
   }
 
   async function removeSkill(skillId) {
