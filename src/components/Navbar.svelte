@@ -8,6 +8,7 @@
 
   let dark = isDark();
   let dropdownOpen = false;
+  let mobileMenuOpen = false;
   let deleting = false;
 
   function toggleDropdown() {
@@ -18,6 +19,9 @@
   function handleBodyClick(e) {
     if (!e.target.closest(".user-menu-container")) {
       dropdownOpen = false;
+    }
+    if (!e.target.closest(".mobile-nav")) {
+      mobileMenuOpen = false;
     }
   }
 
@@ -79,14 +83,17 @@
       <span class="brand-text">.batchrc</span>
     </a>
 
-    <a href="/#/directory" class="nav-btn" class:active={$location === '/directory'}>Student Directory</a>
-    {#if $authReady && $user && $userRole === 'student'}
-      {#if $hasProfile}
-        <a href="/#/profile/{$user.uid}" class="nav-btn" class:active={$location === `/profile/${$user.uid}`}>My Profile</a>
-      {:else}
-        <a href="/#/create-profile" class="nav-btn" class:active={$location === '/create-profile'}>Create Profile</a>
+    <div class="desktop-nav">
+      <a href="/#/directory" class="nav-btn" class:active={$location === '/directory'}>Student Directory</a>
+      {#if $authReady && $user && $userRole === 'student'}
+        {#if $hasProfile}
+          <a href="/#/profile/{$user.uid}" class="nav-btn" class:active={$location === `/profile/${$user.uid}`}>My Profile</a>
+        {:else}
+          <a href="/#/create-profile" class="nav-btn" class:active={$location === '/create-profile'}>Create Profile</a>
+        {/if}
       {/if}
-    {/if}
+    </div>
+
 
     <nav class="nav-links">
       <button
@@ -235,6 +242,32 @@
       {:else if $authReady}
         <a href="/#/login" class="btn btn-primary btn-sm">Sign in</a>
       {/if}
+    <div class="mobile-nav" style="position:relative;">
+      <button class="mobile-menu-btn" on:click={() => mobileMenuOpen = !mobileMenuOpen} aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+      
+      {#if mobileMenuOpen}
+        <div class="dropdown-menu mobile-dropdown">
+          <button class="dropdown-item" on:click={() => { push('/directory'); mobileMenuOpen = false; }}>Student Directory</button>
+          
+          {#if $authReady && $user && $userRole === 'student'}
+            {#if $hasProfile}
+              <button class="dropdown-item" on:click={() => { push(`/profile/${$user.uid}`); mobileMenuOpen = false; }}>My Profile</button>
+            {:else}
+              <button class="dropdown-item" on:click={() => { push('/create-profile'); mobileMenuOpen = false; }}>Create Profile</button>
+            {/if}
+          {/if}
+          
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" on:click={() => { handleToggle(); mobileMenuOpen = false; }}>
+            {dark ? 'Light Mode' : 'Dark Mode'}
+          </button>
+        </div>
+      {/if}
+    </div>
     </nav>
   </div>
 </header>
@@ -277,6 +310,36 @@
   .brand:hover {
     text-decoration: none;
     opacity: 0.85;
+  }
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+  }
+  .mobile-nav {
+    display: none;
+  }
+  .mobile-menu-btn {
+    background: var(--surface);
+    border: none;
+    border-radius: 0.5rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-neu-sm);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .mobile-menu-btn:hover {
+    box-shadow: var(--shadow-neu-inset-sm);
+  }
+  .mobile-dropdown {
+    right: 0;
+    left: auto;
+    top: calc(100% + 12px);
   }
   .nav-links {
     display: flex;
@@ -427,10 +490,14 @@
     .brand-text {
       display: none;
     }
-    .nav-btn {
-      font-size: 0.75rem;
-      padding: 0.35rem 0.5rem;
-      margin-left: 0.25rem;
+    .desktop-nav {
+      display: none;
+    }
+    .theme-toggle {
+      display: none;
+    }
+    .mobile-nav {
+      display: block;
     }
     .navbar-inner {
       padding: 0 0.75rem;
