@@ -163,45 +163,48 @@
   }
   .filter-search {
     background: var(--bg);
-    border: 1px solid var(--surface-border);
+    border: none;
     border-radius: 0.5rem;
     padding: 0.5rem 0.875rem;
     color: var(--text-primary);
     font-size: 0.9rem;
     outline: none;
-    transition: border-color 0.15s;
+    box-shadow: var(--neu-in);
+    transition: all 0.2s;
     width: 200px;
   }
-  .filter-search:focus { border-color: var(--accent); }
+  .filter-search:focus { box-shadow: var(--neu-in), 0 0 0 2px var(--accent-soft); }
   .filter-group { display: flex; align-items: center; gap: 0.5rem; }
   .filter-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
   .filter-pills { display: flex; gap: 0.375rem; }
   .filter-pill {
-    padding: 0.3rem 0.75rem;
+    padding: 0.35rem 0.875rem;
     border-radius: 999px;
     font-size: 0.8125rem;
-    font-weight: 500;
-    background: var(--bg);
-    border: 1px solid var(--surface-border);
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    background: var(--surface);
+    border: none;
+    box-shadow: var(--neu-out-sm);
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s;
   }
-  .filter-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-pill.active { background: var(--surface); box-shadow: var(--neu-in-sm); color: var(--accent); }
+  .filter-pill:hover:not(.active) { box-shadow: var(--neu-out); color: var(--text-primary); }
 
   .skill-dropdown {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 12px);
     left: 0;
     background: var(--surface);
-    border: 1px solid var(--surface-border);
-    border-radius: 0.5rem;
+    border-radius: 1rem;
     z-index: 50;
     padding: 0.5rem;
     max-height: 260px;
     overflow-y: auto;
-    box-shadow: var(--shadow-ambient);
-    width: 220px;
+    box-shadow: var(--neu-out-hover);
+    width: 240px;
   }
   .skill-option {
     display: flex;
