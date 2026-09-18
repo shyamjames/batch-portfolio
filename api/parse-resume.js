@@ -103,14 +103,15 @@ Only include items explicitly present in the resume. Do not invent or infer anyt
         });
         break; // Success! Exit the retry loop.
       } catch (err) {
-        if (err.status === 503 || (err.message && err.message.includes('503'))) {
+        const errorString = (err.message || '').toUpperCase();
+        if (err.status === 503 || errorString.includes('503') || errorString.includes('UNAVAILABLE') || errorString.includes('HIGH DEMAND')) {
           retries--;
           if (retries === 0) throw err;
-          console.log(`503 High Demand hit. Retrying in ${delay/1000}s...`);
+          console.log(`High Demand hit. Retrying in ${delay/1000}s...`);
           await new Promise(resolve => setTimeout(resolve, delay));
           delay *= 2; // Exponential backoff
         } else {
-          throw err; // Throw non-503 errors immediately
+          throw err; // Throw non-retriable errors immediately
         }
       }
     }
