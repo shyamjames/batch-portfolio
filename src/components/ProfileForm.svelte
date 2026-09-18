@@ -7,6 +7,7 @@
   import { uploadPhoto, uploadResume, validateResume, validatePhoto } from '../lib/storage.js'
   import { user } from '../stores/auth.js'
   import { formatGithubUrl, formatLinkedinUrl, formatExternalUrl } from '../lib/url.js'
+  import ResumeReviewModal from './ResumeReviewModal.svelte'
 
   export let mode = 'create'    // 'create' | 'edit'
   export let initial = {}       // initial data for edit mode
@@ -38,6 +39,12 @@
   let resumeURL    = initial.resumeURL || null
   let resumeError  = ''
   let resumeDragging = false
+
+  // Resume Parsing
+  let showReviewModal = false
+  let parsingResume = false
+  let parseError = ''
+  let extractionData = null
 
   // Skills
   let skillIds   = [...(initial.skillIds || [])]
@@ -166,6 +173,77 @@
     if (file) handleResumeFile(file)
   }
 
+  async function handleParseResume() {
+    if (!$user) return
+    const finalResumeURL = resumeURL || initial.resumeURL
+    if (!finalResumeURL) return
+
+    const lastParsed = initial.lastParsedAt || 0
+    if (Date.now() - lastParsed < 24 * 60 * 60 * 1000) {
+      parseError = 'You can only parse your resume once per 24 hours.'
+      return
+    }
+
+    parsingResume = true
+    parseError = ''
+    try {
+      const token = await $user.getIdToken()
+      const res = await fetch('/api/parse-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ resumeUrl: finalResumeURL })
+      })
+      if (!res.ok) throw new Error(await res.text())
+      extractionData = await res.json()
+      showReviewModal = true
+    } catch (e) {
+      console.error(e)
+      parseError = 'Couldn\'t parse this resume automatically — please fill in manually.'
+    } finally {
+      parsingResume = false
+    }
+  }
+
+  async function handleReviewConfirm(e) {
+    const { skills: parsedSkills, projects: parsedProjects, certs: parsedCerts } = e.detail
+    
+    // Add projects
+    projects = [...projects, ...parsedProjects]
+    
+    // Add certs
+    certs = [...certs, ...parsedCerts]
+    
+    // Add skills (creating new ones if needed)
+    for (const s of parsedSkills) {
+      if (s.isExisting && s.existingId) {
+        if (!skillIds.includes(s.existingId)) {
+          skillIds = [...skillIds, s.existingId]
+          skillMap[s.existingId] = s.name
+        }
+      } else {
+        try {
+          const newSkill = await createSkillOnly(s.name)
+          registerSkillInStore(newSkill)
+          if (!skillIds.includes(newSkill.id)) {
+            skillIds = [...skillIds, newSkill.id]
+            skillMap[newSkill.id] = newSkill.name
+          }
+        } catch (err) {
+          console.error('Failed to create extracted skill:', err)
+        }
+      }
+    }
+    
+    // Mark as parsed so we can update lastParsedAt on save
+    initial.lastParsedAt = Date.now() // optimism
+    
+    showReviewModal = false
+    extractionData = null
+  }
+
   function formatBytes(bytes) {
     if (bytes < 1024) return bytes + ' B'
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB'
@@ -245,14 +323,15 @@
         batch,
         photoURL,
         resumeURL: finalResumeURL,
-        skillIds,
         links: {
           github:    githubUsername.trim() ? `https://github.com/${githubUsername.trim()}` : null,
           linkedin:  formatLinkedinUrl(linkedin) || null,
           portfolio: formatExternalUrl(portfolio) || null,
         },
+        skills: skillIds,
         projects,
         certs,
+        lastParsedAt: initial.lastParsedAt || null
       })
 
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Save operation timed out after 10 seconds")), 10000))
@@ -394,6 +473,26 @@
 
         {#if resumeError}
           <p class="field-error" role="alert">{resumeError}</p>
+        {/if}
+
+        {#if (resumeURL || initial.resumeURL) && !resumeFile}
+          <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
+            <button type="button" class="btn btn-secondary" on:click={handleParseResume} disabled={parsingResume}>
+              {#if parsingResume}
+                Parsing...
+              {:else}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                Parse resume with AI
+              {/if}
+            </button>
+            {#if parseError}
+              <p class="error-msg">{parseError}</p>
+            {:else}
+              <p class="text-caption" style="color: var(--text-secondary); max-width: 400px; font-size: 0.8rem;">
+                Auto-fill your skills, projects & certifications. This does not overwrite your existing data, it only adds to it.
+              </p>
+            {/if}
+          </div>
         {/if}
       </div>
     </div>
@@ -597,6 +696,13 @@
   </div>
 
 </form>
+
+<ResumeReviewModal
+  show={showReviewModal}
+  rawData={extractionData}
+  on:cancel={() => { showReviewModal = false; extractionData = null; }}
+  on:confirm={handleReviewConfirm}
+/>
 
 <style>
   .profile-form { display: flex; flex-direction: column; gap: 2rem; }
