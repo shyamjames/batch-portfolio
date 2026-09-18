@@ -175,17 +175,35 @@
 
   async function handleParseResume() {
     if (!$user) return
-    const finalResumeURL = resumeURL || initial.resumeURL
-    if (!finalResumeURL) return
+    
+    parsingResume = true
+    parseError = ''
+    
+    let finalResumeURL = resumeURL || initial.resumeURL
+
+    if (resumeFile) {
+      try {
+        finalResumeURL = await uploadResume($user.uid, resumeFile)
+        resumeURL = finalResumeURL
+      } catch (err) {
+        console.error(err)
+        parseError = 'Failed to upload resume before parsing.'
+        parsingResume = false
+        return
+      }
+    }
+
+    if (!finalResumeURL) {
+      parsingResume = false
+      return
+    }
 
     const lastParsed = initial.lastParsedAt || 0
     if (Date.now() - lastParsed < 24 * 60 * 60 * 1000) {
       parseError = 'You can only parse your resume once per 24 hours.'
+      parsingResume = false
       return
     }
-
-    parsingResume = true
-    parseError = ''
     try {
       const token = await $user.getIdToken()
       const res = await fetch('/api/parse-resume', {
@@ -475,7 +493,7 @@
           <p class="field-error" role="alert">{resumeError}</p>
         {/if}
 
-        {#if (resumeURL || initial.resumeURL) && !resumeFile}
+        {#if resumeURL || initial.resumeURL || resumeFile}
           <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
             <button type="button" class="btn btn-secondary" on:click={handleParseResume} disabled={parsingResume}>
               {#if parsingResume}
