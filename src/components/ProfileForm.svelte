@@ -2,21 +2,31 @@
   import { onMount } from 'svelte'
   import { get } from 'svelte/store'
   import SkillChip from './SkillChip.svelte'
-  import { allSkills, ensureSkillsLoaded } from '../stores/skills.js'
-  import { addSkillToStudent, createAndAddSkill, removeSkillFromStudent } from '../lib/firestore.js'
+  import { allSkills, ensureSkillsLoaded, registerSkillInStore } from '../stores/skills.js'
+  import { createSkillOnly } from '../lib/firestore.js'
   import { uploadPhoto, uploadResume, validateResume, validatePhoto } from '../lib/storage.js'
   import { user } from '../stores/auth.js'
+  import { formatGithubUrl, formatLinkedinUrl, formatExternalUrl } from '../lib/url.js'
 
   export let mode = 'create'    // 'create' | 'edit'
   export let initial = {}       // initial data for edit mode
   export let onSave = null      // async (formData) => void
   export let saving = false
 
+  function extractGithubUsername(urlOrHandle) {
+    if (!urlOrHandle) return ''
+    let val = urlOrHandle.trim()
+    val = val.replace(/^https?:\/\//i, '')
+    val = val.replace(/^(www\.)?github\.com\//i, '')
+    val = val.replace(/^@/, '')
+    return val.split('/')[0] || ''
+  }
+
   // Form fields
   let name       = initial.name       || ''
   let bio        = initial.bio        || ''
   let batch      = initial.batch      || ''
-  let github     = initial.links?.github     || ''
+  let githubUsername = extractGithubUsername(initial.links?.github || '')
   let linkedin   = initial.links?.linkedin   || ''
   let portfolio  = initial.links?.portfolio  || ''
   let photoFile    = null
@@ -73,9 +83,12 @@
     showSuggestions = true
   }
 
-  async function selectSkill(skill) {
-    if (!$user) return
-    await addSkillToStudent($user.uid, skill.id)
+  function handleGithubInput(e) {
+    githubUsername = extractGithubUsername(e.target.value)
+  }
+
+  function selectSkill(skill) {
+    if (!skill || skillIds.includes(skill.id)) return
     skillIds = [...skillIds, skill.id]
     skillMap[skill.id] = skill.name
     skillQuery = ''
@@ -85,26 +98,33 @@
 
   let creatingSkill = false
   async function createSkill() {
-    if (!skillQuery.trim() || !$user || creatingSkill) return
+    const name = skillQuery.trim()
+    if (!name || creatingSkill) return
     creatingSkill = true
+
+    // Optimistically clear input and dismiss dropdown for 0ms visual latency
+    skillQuery = ''
+    suggestions = []
+    showSuggestions = false
+
     try {
-      const uid = await createAndAddSkill($user.uid, skillQuery.trim())
-      skillMap[uid] = skillQuery.trim()
-      skillMap = skillMap
-      skillIds = [...skillIds, uid]
-      // Refresh skills store
-      await ensureSkillsLoaded(true)
-      skillQuery = ''
-      suggestions = []
-      showSuggestions = false
+      const newSkill = await createSkillOnly(name)
+      registerSkillInStore(newSkill)
+      if (!skillIds.includes(newSkill.id)) {
+        skillIds = [...skillIds, newSkill.id]
+        skillMap[newSkill.id] = newSkill.name
+      }
+    } catch (err) {
+      console.error('Failed to create skill:', err)
+      if (window.__showToast) {
+        window.__showToast('Failed to create skill: ' + err.message, 'error')
+      }
     } finally {
       creatingSkill = false
     }
   }
 
-  async function removeSkill(skillId) {
-    if (!$user) return
-    await removeSkillFromStudent($user.uid, skillId)
+  function removeSkill(skillId) {
     skillIds = skillIds.filter(id => id !== skillId)
   }
 
@@ -158,10 +178,7 @@
     const tech = typeof newProject.techUsed === 'string'
       ? newProject.techUsed.split(',').map(t => t.trim()).filter(Boolean)
       : (Array.isArray(newProject.techUsed) ? newProject.techUsed : [])
-    let link = (newProject.link || '').trim()
-    if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
-      link = 'https://' + link
-    }
+    let link = formatExternalUrl(newProject.link)
     projects = [
       ...projects,
       {
@@ -178,10 +195,7 @@
   // Cert list
   function addCert() {
     if (!newCert.title || !newCert.title.trim()) return
-    let link = (newCert.link || '').trim()
-    if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
-      link = 'https://' + link
-    }
+    let link = formatExternalUrl(newCert.link)
     certs = [
       ...certs,
       {
@@ -233,9 +247,9 @@
         resumeURL: finalResumeURL,
         skillIds,
         links: {
-          github:    github.trim()    || null,
-          linkedin:  linkedin.trim()  || null,
-          portfolio: portfolio.trim() || null,
+          github:    githubUsername.trim() ? `https://github.com/${githubUsername.trim()}` : null,
+          linkedin:  formatLinkedinUrl(linkedin) || null,
+          portfolio: formatExternalUrl(portfolio) || null,
         },
         projects,
         certs,
@@ -437,12 +451,30 @@
   <section class="form-section">
     <h3 class="text-card section-title">Links</h3>
     <div class="field">
-      <label for="pf-github">GitHub URL</label>
-      <input id="pf-github" bind:value={github} placeholder="https://github.com/username" type="url" />
+      <label for="pf-github">GitHub Username</label>
+      <div class="url-input-group">
+        <span class="url-prefix">https://github.com/</span>
+        <input
+          id="pf-github"
+          bind:value={githubUsername}
+          on:input={handleGithubInput}
+          placeholder="username"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+      <span class="field-hint">Enter your GitHub username only (e.g. {name ? name.toLowerCase().replace(/\s+/g, '') : 'username'})</span>
     </div>
     <div class="field">
-      <label for="pf-linkedin">LinkedIn URL</label>
-      <input id="pf-linkedin" bind:value={linkedin} placeholder="https://linkedin.com/in/username" type="url" />
+      <label for="pf-linkedin">LinkedIn Profile URL</label>
+      <input
+        id="pf-linkedin"
+        bind:value={linkedin}
+        placeholder="https://linkedin.com/in/your-profile"
+        type="url"
+        spellcheck="false"
+      />
+      <span class="field-hint">Enter your full LinkedIn profile URL</span>
     </div>
     <div class="field">
       <label for="pf-portfolio">Portfolio URL</label>
@@ -467,7 +499,7 @@
               <div class="item-title-col">
                 <strong class="text-card">{p.title}</strong>
                 {#if p.link}
-                  <a href={p.link} target="_blank" rel="noopener" class="text-caption link-external">↗ Link</a>
+                  <a href={formatExternalUrl(p.link)} target="_blank" rel="noopener noreferrer" class="text-caption link-external">↗ Link</a>
                 {/if}
               </div>
               <button type="button" class="btn btn-danger btn-sm" on:click={() => removeProject(i)}>Remove</button>
@@ -524,7 +556,7 @@
               <div class="item-title-col">
                 <strong class="text-card">{c.title}</strong>
                 {#if c.link}
-                  <a href={c.link} target="_blank" rel="noopener" class="text-caption link-external">↗ Link</a>
+                  <a href={formatExternalUrl(c.link)} target="_blank" rel="noopener noreferrer" class="text-caption link-external">↗ Link</a>
                 {/if}
               </div>
               <button type="button" class="btn btn-danger btn-sm" on:click={() => removeCert(i)}>Remove</button>
@@ -657,4 +689,45 @@
   .add-item-form { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; border-radius: 1rem; background: var(--bg); box-shadow: var(--shadow-neu-inset); }
   .form-actions { display: flex; justify-content: flex-end; padding-top: 1rem; }
   .field-error { font-size: 0.8rem; color: var(--danger, #dc2626); margin-top: -0.25rem; }
+
+  /* URL input group with prefix */
+  .url-input-group {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-neu-inset);
+    overflow: hidden;
+    transition: all 0.15s;
+  }
+  .url-input-group:focus-within {
+    box-shadow: var(--shadow-neu-inset), 0 0 0 2px var(--primary);
+  }
+  .url-prefix {
+    padding: 0.75rem 0.25rem 0.75rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    user-select: none;
+    white-space: nowrap;
+    opacity: 0.85;
+  }
+  .url-input-group input {
+    background: transparent;
+    border: none;
+    box-shadow: none !important;
+    padding: 0.75rem 1rem 0.75rem 0.25rem;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    width: 100%;
+    outline: none;
+  }
+  .field-hint {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    padding-left: 0.25rem;
+    margin-top: -0.25rem;
+  }
 </style>

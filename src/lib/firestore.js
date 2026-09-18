@@ -2,7 +2,7 @@ import { db } from './firebase.js'
 import {
   doc, getDoc, setDoc, updateDoc, deleteDoc,
   collection, getDocs, addDoc, serverTimestamp,
-  runTransaction, writeBatch, query, orderBy, limit,
+  runTransaction, writeBatch, query, where, orderBy, limit,
   increment,
 } from 'firebase/firestore'
 
@@ -200,6 +200,32 @@ export async function createAndAddSkill(uid, skillName) {
     tx.update(studentRef, { skillIds: [...existing, skillRef.id], updatedAt: serverTimestamp() })
   })
   return skillRef.id
+}
+
+/**
+ * Fast creation of a single skill without locking or mutating student records.
+ * Returns { id, name }. Reuses existing skill if name matches case-insensitively.
+ */
+export async function createSkillOnly(skillName) {
+  const trimmed = (skillName || '').trim()
+  if (!trimmed) throw new Error('Skill name cannot be empty')
+  const lower = trimmed.toLowerCase()
+
+  const q = query(collection(db, 'skills'), where('nameLower', '==', lower), limit(1))
+  const snap = await getDocs(q)
+  if (!snap.empty) {
+    const existingDoc = snap.docs[0]
+    return { id: existingDoc.id, name: existingDoc.data().name }
+  }
+
+  const skillRef = doc(collection(db, 'skills'))
+  await setDoc(skillRef, {
+    name: trimmed,
+    nameLower: lower,
+    usageCount: 1,
+    createdAt: serverTimestamp(),
+  })
+  return { id: skillRef.id, name: trimmed }
 }
 
 /**

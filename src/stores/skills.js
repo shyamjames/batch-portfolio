@@ -29,3 +29,14 @@ export function searchSkills(query, currentSkillIds = []) {
     (s.nameLower ?? s.name.toLowerCase()).includes(q)
   )
 }
+
+/** Instantly registers a newly created skill into the cached store */
+export function registerSkillInStore(newSkill) {
+  if (!newSkill || !newSkill.id) return
+  allSkills.update(list => {
+    if (list.some(s => s.id === newSkill.id || s.name.toLowerCase() === newSkill.name.toLowerCase())) {
+      return list
+    }
+    return [...list, newSkill].sort((a, b) => a.name.localeCompare(b.name))
+  })
+}
