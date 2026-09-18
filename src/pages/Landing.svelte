@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import BentoCard from "../components/BentoCard.svelte";
   import StatsChart from "../components/StatsChart.svelte";
+  import InteractiveGrid from "../components/InteractiveGrid.svelte";
   import { getAllSkills, getAggregates } from "../lib/firestore.js";
   import { user, authReady } from "../stores/auth.js";
   import { signInWithGoogle } from "../lib/auth.js";
@@ -141,6 +142,7 @@
   <section class="hero page-wrapper">
     <div class="bento-grid">
       <div class="span-12 hero-card card">
+        <InteractiveGrid />
         <div class="hero-content">
           <p class="hero-eyebrow text-caption">
             MCA &amp; MSc CS · 2025–27 Batch · RCSS Kalamassery

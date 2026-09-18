@@ -19,6 +19,9 @@
   --danger: #FF2157;
   --accent: #111111;
   
+  --grid-dot-base: rgba(0, 0, 0, 0.08);
+  --grid-dot-highlight: rgba(0, 0, 0, 0.8);
+  
   --chart-1: #111111;
   --chart-2: #00A63D;
   --chart-3: #FE9900;
@@ -62,6 +65,9 @@
     --danger: #FF5C7C;
     --accent: #F1F2F5;
     
+    --grid-dot-base: rgba(255, 255, 255, 0.05);
+    --grid-dot-highlight: rgba(255, 255, 255, 0.8);
+    
     --chart-1: #F1F2F5;
     --chart-2: #2ED860;
     --chart-3: #FFB13D;
@@ -96,6 +102,9 @@
   --warning: #FFB13D;
   --danger: #FF5C7C;
   --accent: #F1F2F5;
+  
+  --grid-dot-base: rgba(255, 255, 255, 0.05);
+  --grid-dot-highlight: rgba(255, 255, 255, 0.8);
   
   --chart-1: #F1F2F5;
   --chart-2: #2ED860;
