@@ -62,8 +62,9 @@
       <span class="brand-text">.batchrc</span>
     </a>
 
+    <a href="/#/directory" class="nav-link directory-link">Directory</a>
+
     <nav class="nav-links">
-      <a href="/#/directory" class="nav-link">Directory</a>
       {#if $authReady && $user}
         
         <div class="user-menu-container" style="position:relative;margin-left:0.5rem">
@@ -183,6 +184,10 @@
     transition: color 0.15s;
   }
   .nav-link:hover { color: var(--text-primary); text-decoration: none; }
+  .directory-link {
+    font-weight: 600;
+    margin-left: 0.75rem;
+  }
   .theme-toggle {
     background: var(--surface);
     border: none;
