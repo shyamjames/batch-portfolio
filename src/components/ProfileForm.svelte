@@ -44,6 +44,7 @@
   let showReviewModal = false
   let parsingResume = false
   let parseError = ''
+  let parseLogs = []
   let extractionData = null
 
   // Skills
