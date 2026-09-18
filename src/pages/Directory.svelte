@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import RouteGuard from '../components/RouteGuard.svelte'
   import StudentCard from '../components/StudentCard.svelte'
   import { getAllStudents, getAllSkills } from '../lib/firestore.js'
   import { querystring } from 'svelte-spa-router'
@@ -64,7 +63,6 @@
   <meta name="description" content="Browse all student profiles from the 2025–27 batch." />
 </svelte:head>
 
-<RouteGuard requireAuth>
   <div class="page-wrapper directory-page">
 
     <header class="dir-header">
@@ -147,7 +145,6 @@
     {/if}
 
   </div>
-</RouteGuard>
 
 <style>
   .directory-page { padding: 2rem 1.5rem 4rem; }

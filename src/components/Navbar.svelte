@@ -63,8 +63,8 @@
     </a>
 
     <nav class="nav-links">
+      <a href="/#/directory" class="nav-link">Directory</a>
       {#if $authReady && $user}
-        <a href="/#/directory" class="nav-link">Directory</a>
         {#if $userRole === 'student'}
           {#if $hasProfile}
             <a href="/#/profile/{$user.uid}" class="nav-link">My Profile</a>

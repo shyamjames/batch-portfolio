@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import RouteGuard from '../components/RouteGuard.svelte'
   import SkillChip from '../components/SkillChip.svelte'
   import { getStudent, getProjects, getCerts, getAllSkills } from '../lib/firestore.js'
   import { user } from '../stores/auth.js'
@@ -64,8 +63,7 @@
   <meta name="description" content="{student?.name}'s profile — {student?.batch} 2025–27 batch." />
 </svelte:head>
 
-<RouteGuard requireAuth requireProfile>
-  {#if loading}
+{#if loading}
     <div class="profile-loading page-wrapper">
       <div class="spinner" aria-label="Loading profile"></div>
     </div>
@@ -224,7 +222,6 @@
       </main>
     </div>
   {/if}
-</RouteGuard>
 
 <style>
   .profile-loading {
